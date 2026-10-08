@@ -1,5 +1,8 @@
 *.iml
 .gradle
+.kotlin/
+hs_err_pid*.log
+replay_pid*.log
 /local.properties
 /.idea/caches
 /.idea/libraries

@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.ProyectoPanaderia" parent="android:Theme.Material.Light.NoActionBar" />
+    <style name="Theme.ProyectoPanaderia" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowBackground">#FFFBF4</item>
+    </style>
+    <style name="Theme.ProyectoPanaderia.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">#F3E5CD</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_bakery</item>
+        <item name="postSplashScreenTheme">@style/Theme.ProyectoPanaderia</item>
+    </style>
 </resources>
