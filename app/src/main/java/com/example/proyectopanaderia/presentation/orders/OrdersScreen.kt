@@ -1,5 +1,6 @@
 package com.example.proyectopanaderia.presentation.orders
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -27,6 +28,7 @@ import com.example.proyectopanaderia.domain.validation.Money
 import com.example.proyectopanaderia.presentation.components.EmptyState
 import com.example.proyectopanaderia.presentation.components.Heading
 import com.example.proyectopanaderia.presentation.components.Message
+import com.example.proyectopanaderia.presentation.ticket.TicketScreen
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
@@ -124,6 +126,13 @@ fun OrdersScreen(email: String, container: AppContainer, modifier: Modifier = Mo
     )
     val state by model.state.collectAsStateWithLifecycle()
     var expandedId by rememberSaveable { mutableStateOf<Long?>(null) }
+    var ticketOrder by remember { mutableStateOf<Order?>(null) }
+    val selectedTicket = ticketOrder
+    if (selectedTicket != null) {
+        BackHandler { ticketOrder = null }
+        TicketScreen(selectedTicket, onBack = { ticketOrder = null }, modifier = modifier)
+        return
+    }
 
     LazyColumn(
         modifier = modifier,
@@ -180,6 +189,7 @@ fun OrdersScreen(email: String, container: AppContainer, modifier: Modifier = Mo
                     expanded = expandedId == order.id,
                     busy = state.busy,
                     onToggle = { expandedId = if (expandedId == order.id) null else order.id },
+                    onViewTicket = { ticketOrder = order },
                     onSetArchived = model::setArchived,
                 )
             }
@@ -193,6 +203,7 @@ private fun OrderCard(
     expanded: Boolean,
     busy: Boolean,
     onToggle: () -> Unit,
+    onViewTicket: () -> Unit,
     onSetArchived: (Long, Boolean) -> Unit,
 ) {
     Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
@@ -217,6 +228,11 @@ private fun OrderCard(
                 HorizontalDivider()
                 order.items.forEach { item -> OrderItemRow(item) }
             }
+            OutlinedButton(
+                onClick = onViewTicket,
+                enabled = !busy,
+                modifier = Modifier.fillMaxWidth(),
+            ) { Text("Ver ticket QR") }
             if (order.status == OrderStatus.SAVED) {
                 Button(
                     onClick = { onSetArchived(order.id, true) },
