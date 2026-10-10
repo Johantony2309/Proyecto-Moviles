@@ -26,6 +26,7 @@ import com.example.proyectopanaderia.domain.repository.OrderRepository
 import com.example.proyectopanaderia.domain.validation.Money
 import com.example.proyectopanaderia.presentation.components.EmptyState
 import com.example.proyectopanaderia.presentation.components.Heading
+import com.example.proyectopanaderia.presentation.components.Message
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
@@ -35,15 +36,18 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-/** State of the read-only orders screen. */
+/** State of the orders screen. */
 data class OrdersState(
     val orders: List<Order> = emptyList(),
     val filter: OrderStatus? = null,
     val loading: Boolean = true,
     val loadFailed: Boolean = false,
+    val busy: Boolean = false,
+    val message: String? = null,
+    val messageIsError: Boolean = false,
 )
 
-/** Observes the orders of one customer. Creation and editing of orders stay out of scope. */
+/** Observes the orders of one customer. Archiving is reversible; orders are never deleted here. */
 @OptIn(ExperimentalCoroutinesApi::class)
 class OrdersViewModel(
     private val email: String,
@@ -52,6 +56,7 @@ class OrdersViewModel(
 ) : ViewModel() {
     private val mutableState = MutableStateFlow(OrdersState())
     val state = mutableState.asStateFlow()
+    private var customerId = 0L
     private var observer: Job? = null
     init { load() }
 
@@ -60,7 +65,7 @@ class OrdersViewModel(
         mutableState.update { it.copy(loading = true, loadFailed = false) }
         observer = viewModelScope.launch {
             try {
-                val customerId = customers.ensureLocalCustomer(email)
+                customerId = customers.ensureLocalCustomer(email)
                 mutableState.map { it.filter }.distinctUntilChanged()
                     .flatMapLatest { status -> orders.orders(customerId, status) }
                     .collect { list ->
@@ -77,6 +82,36 @@ class OrdersViewModel(
     fun setFilter(status: OrderStatus?) {
         mutableState.update { it.copy(filter = status, loading = true, loadFailed = false) }
     }
+
+    /** Archives a saved order or recovers an archived one. The Room flow refreshes the list. */
+    fun setArchived(orderId: Long, archived: Boolean) {
+        if (state.value.busy || state.value.loading || state.value.loadFailed) return
+        mutableState.update { it.copy(busy = true, message = null, messageIsError = false) }
+        viewModelScope.launch {
+            try {
+                orders.setArchived(customerId, orderId, archived)
+                mutableState.update {
+                    it.copy(messageIsError = false, message = if (archived) {
+                        "Pedido archivado. Lo encontrarás en Archivados."
+                    } else {
+                        "Pedido recuperado. Lo encontrarás en Guardados."
+                    })
+                }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: IllegalArgumentException) {
+                mutableState.update { it.copy(messageIsError = true,
+                    message = e.message ?: "No pudimos actualizar el pedido.") }
+            } catch (_: Exception) {
+                mutableState.update { it.copy(messageIsError = true,
+                    message = "No pudimos actualizar el pedido. Inténtalo de nuevo.") }
+            } finally {
+                mutableState.update { it.copy(busy = false) }
+            }
+        }
+    }
+
+    fun clearMessage() { mutableState.update { it.copy(message = null, messageIsError = false) } }
 }
 
 @Composable
@@ -103,9 +138,21 @@ fun OrdersScreen(email: String, container: AppContainer, modifier: Modifier = Mo
         }
         item {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                FilterChip(selected = state.filter == null, onClick = { model.setFilter(null) }, label = { Text("Todos") })
-                FilterChip(selected = state.filter == OrderStatus.SAVED, onClick = { model.setFilter(OrderStatus.SAVED) }, label = { Text("Guardados") })
-                FilterChip(selected = state.filter == OrderStatus.ARCHIVED, onClick = { model.setFilter(OrderStatus.ARCHIVED) }, label = { Text("Archivados") })
+                FilterChip(selected = state.filter == null, onClick = { model.setFilter(null) },
+                    enabled = !state.busy, label = { Text("Todos") })
+                FilterChip(selected = state.filter == OrderStatus.SAVED, onClick = { model.setFilter(OrderStatus.SAVED) },
+                    enabled = !state.busy, label = { Text("Guardados") })
+                FilterChip(selected = state.filter == OrderStatus.ARCHIVED, onClick = { model.setFilter(OrderStatus.ARCHIVED) },
+                    enabled = !state.busy, label = { Text("Archivados") })
+            }
+        }
+        if (state.busy) item { LinearProgressIndicator(Modifier.fillMaxWidth()) }
+        state.message?.let { message ->
+            item {
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Message(message, isError = state.messageIsError)
+                    TextButton(onClick = model::clearMessage) { Text("Descartar") }
+                }
             }
         }
         when {
@@ -131,7 +178,9 @@ fun OrdersScreen(email: String, container: AppContainer, modifier: Modifier = Mo
                 OrderCard(
                     order = order,
                     expanded = expandedId == order.id,
+                    busy = state.busy,
                     onToggle = { expandedId = if (expandedId == order.id) null else order.id },
+                    onSetArchived = model::setArchived,
                 )
             }
         }
@@ -139,7 +188,13 @@ fun OrdersScreen(email: String, container: AppContainer, modifier: Modifier = Mo
 }
 
 @Composable
-private fun OrderCard(order: Order, expanded: Boolean, onToggle: () -> Unit) {
+private fun OrderCard(
+    order: Order,
+    expanded: Boolean,
+    busy: Boolean,
+    onToggle: () -> Unit,
+    onSetArchived: (Long, Boolean) -> Unit,
+) {
     Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
         Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(
@@ -161,6 +216,19 @@ private fun OrderCard(order: Order, expanded: Boolean, onToggle: () -> Unit) {
             if (expanded) {
                 HorizontalDivider()
                 order.items.forEach { item -> OrderItemRow(item) }
+            }
+            if (order.status == OrderStatus.SAVED) {
+                Button(
+                    onClick = { onSetArchived(order.id, true) },
+                    enabled = !busy,
+                    modifier = Modifier.fillMaxWidth(),
+                ) { Text("Archivar") }
+            } else {
+                Button(
+                    onClick = { onSetArchived(order.id, false) },
+                    enabled = !busy,
+                    modifier = Modifier.fillMaxWidth(),
+                ) { Text("Recuperar") }
             }
         }
     }
