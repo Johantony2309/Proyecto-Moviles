@@ -1,8 +1,8 @@
 # Panadería · acceso y catálogo local
 
-Aplicación Android nativa en Kotlin y Jetpack Compose. Interfaces disponibles: acceso de demostración, splash, configuración local, catálogo, favoritos y carrito. El catálogo permite buscar, filtrar por categoría, guardar favoritos y añadir productos al carrito mediante Room y MVVM. Favoritos permite consultar los productos guardados, quitarlos o añadirlos al carrito. Carrito permite modificar cantidades, quitar productos y consultar subtotal y total; la creación del pedido permanece pendiente de integración. Ticket dispone de una pantalla preparada para recibir un pedido existente y generar un QR local escaneable. Las pantallas de pedidos y administración quedan aplazadas por decisión de alcance; el CRUD visual completo sigue pendiente. No hay registro ni servidor.
+Aplicación Android nativa en Kotlin y Jetpack Compose. Interfaces disponibles: acceso de demostración, splash, configuración local, catálogo, favoritos, carrito y pedidos. El catálogo permite buscar, filtrar por categoría, guardar favoritos y añadir productos al carrito mediante Room y MVVM. Favoritos permite consultar los productos guardados, quitarlos o añadirlos al carrito. Carrito permite modificar cantidades, quitar productos y consultar subtotal y total; la creación del pedido permanece pendiente de integración. Pedidos permite consultar el historial con filtros Todos/Guardados/Archivados, fecha, total, estado y detalle de productos. Ticket dispone de una pantalla preparada para recibir un pedido existente y generar un QR local escaneable. La administración de maestros queda aplazada por decisión de alcance; el CRUD visual completo sigue pendiente. No hay registro ni servidor.
 
-Consulta [la arquitectura, las tablas y su relación con Figma](docs/ARQUITECTURA.md). La documentación identifica también las dos interfaces inferiores del diseño (Favoritos y Tus pedidos), pendientes de implementación.
+Consulta [la arquitectura, las tablas y su relación con Figma](docs/ARQUITECTURA.md). La documentación identifica las dos interfaces inferiores del diseño (Favoritos y Tus pedidos); la consulta de pedidos ya está implementada en modo lectura.
 
 ## Probar el acceso
 
@@ -13,7 +13,7 @@ Consulta [la arquitectura, las tablas y su relación con Figma](docs/ARQUITECTUR
 
 ## Explorar el catálogo
 
-Después de acceder, pulsa **Cargar catálogo de ejemplo** si no hay productos. Esta acción explícita carga los cuatro productos de referencia y sus categorías sin sustituir un catálogo existente. Buscar y filtrar no modifica los datos. Los corazones y Añadir persisten localmente. El menú inferior abre **Favoritos** y **Carrito**; desde carrito se ajustan cantidades, se quitan productos y se muestra el total con retiro sin costo. Room conserva favoritos y carrito al volver a abrir la aplicación. **Mi cuenta** permite abrir Configuración o cerrar sesión. El perfil local se crea una sola vez por correo.
+Después de acceder, pulsa **Cargar catálogo de ejemplo** si no hay productos. Esta acción explícita carga los cuatro productos de referencia y sus categorías sin sustituir un catálogo existente. Buscar y filtrar no modifica los datos. Los corazones y Añadir persisten localmente. El menú inferior abre **Favoritos**, **Carrito** y **Pedidos**; desde carrito se ajustan cantidades, se quitan productos y se muestra el total con retiro sin costo. **Pedidos** lee el historial del cliente desde las tablas `orders` y `order_items` y muestra el estado de solo lectura; la creación de pedidos aún no está conectada. Room conserva favoritos y carrito al volver a abrir la aplicación. **Mi cuenta** permite abrir Configuración o cerrar sesión. El perfil local se crea una sola vez por correo.
 
 ## Persistencia local
 
@@ -59,4 +59,4 @@ Las pruebas unitarias de `DemoAccountTest` comprueban validación y rechazo de c
 
 Referencias oficiales: [Preferences DataStore](https://developer.android.com/topic/libraries/architecture/datastore) y [SplashScreen](https://developer.android.com/develop/ui/views/launch/splash-screen/migrate).
 
-El ticket recibe un `Order` desde el futuro módulo de pedidos, usa su `qrPayload` y no crea ni modifica pedidos. Falta que dicho módulo abra `TicketScreen` con el pedido seleccionado y gestione el regreso.
+El ticket recibe un `Order` desde el módulo de pedidos, usa su `qrPayload` y no crea ni modifica pedidos. La pantalla de pedidos actual solo consulta; falta que abra `TicketScreen` con el pedido seleccionado y gestione el regreso.

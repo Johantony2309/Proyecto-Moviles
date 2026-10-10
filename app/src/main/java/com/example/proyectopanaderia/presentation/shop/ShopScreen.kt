@@ -1,6 +1,8 @@
 package com.example.proyectopanaderia.presentation.shop
 
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -15,6 +17,7 @@ import com.example.proyectopanaderia.presentation.cart.CartScreen
 import com.example.proyectopanaderia.presentation.catalog.CatalogScreen
 import com.example.proyectopanaderia.presentation.components.EmptyState
 import com.example.proyectopanaderia.presentation.favorites.FavoritesScreen
+import com.example.proyectopanaderia.presentation.orders.OrdersScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -49,10 +52,12 @@ fun ShopScreen(email: String, container: AppContainer, settings: () -> Unit, sig
             Surface(tonalElevation = 3.dp) {
                 Column(Modifier.fillMaxWidth().windowInsetsPadding(WindowInsets.navigationBars).padding(16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Row(Modifier.horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         TextButton(onClick = { section = "catalog" }, enabled = !state.busy) { Text("Catálogo") }
                         TextButton(onClick = { section = "favorites" }, enabled = !state.busy) { Text("Favoritos") }
                         TextButton(onClick = { section = "cart" }, enabled = !state.busy) { Text("Carrito") }
+                        TextButton(onClick = { section = "orders" }, enabled = !state.busy) { Text("Pedidos") }
                     }
                     Text("Guardados: ${state.data.favorites.size} · En carrito: ${state.data.cart.sumOf { it.quantity }}",
                         style = MaterialTheme.typography.bodySmall)
@@ -81,6 +86,7 @@ fun ShopScreen(email: String, container: AppContainer, settings: () -> Unit, sig
                 model::setQuantity,
                 modifier,
             )
+            section == "orders" -> OrdersScreen(email, container, modifier)
             else -> CatalogScreen(state.data.products, state.data.categories,
                 state.data.favorites.map { it.id }.toSet(), state.busy,
                 model::add, model::favorite, model::examples, modifier)
