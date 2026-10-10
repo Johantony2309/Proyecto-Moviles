@@ -34,6 +34,12 @@ fun ShopScreen(email: String, container: AppContainer, settings: () -> Unit, sig
     LaunchedEffect(state.message) {
         state.message?.let { snackbar.showSnackbar(it); model.clearMessage() }
     }
+    LaunchedEffect(state.createdOrderId) {
+        if (state.createdOrderId != null) {
+            model.clearCreatedOrder()
+            section = "orders"
+        }
+    }
     Scaffold(
         contentWindowInsets = WindowInsets.safeDrawing,
         topBar = {
@@ -84,6 +90,7 @@ fun ShopScreen(email: String, container: AppContainer, settings: () -> Unit, sig
                 state.busy,
                 model::add,
                 model::setQuantity,
+                model::confirmOrder,
                 modifier,
             )
             section == "orders" -> OrdersScreen(email, container, modifier)

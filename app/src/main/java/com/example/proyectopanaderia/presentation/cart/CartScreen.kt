@@ -21,6 +21,7 @@ fun CartScreen(
     busy: Boolean,
     addOne: (Long) -> Unit,
     setQuantity: (Long, Int) -> Unit,
+    onConfirm: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val subtotalCents = cart.fold(0L) { total, item -> Math.addExact(total, item.totalCents) }
@@ -81,6 +82,14 @@ fun CartScreen(
                         Text("Subtotal: ${Money.format(subtotalCents)}")
                         Text("Retiro en Pastelería Andony: sin costo")
                         Text("Total: ${Money.format(subtotalCents)}", fontWeight = FontWeight.Bold)
+                        if (busy) LinearProgressIndicator(Modifier.fillMaxWidth())
+                        Button(
+                            onClick = onConfirm,
+                            enabled = !busy && cart.isNotEmpty(),
+                            modifier = Modifier.fillMaxWidth().padding(top = 6.dp),
+                        ) { Text(if (busy) "Confirmando pedido…" else "Confirmar pedido") }
+                        Text("Al confirmar guardamos tu pedido con sus productos, cantidades y total.",
+                            style = MaterialTheme.typography.bodySmall)
                     }
                 }
             }

@@ -14,11 +14,12 @@ data class ShopData(
 )
 data class ShopState(
     val data: ShopData = ShopData(), val loading: Boolean = true, val loadFailed: Boolean = false,
-    val busy: Boolean = false, val message: String? = null,
+    val busy: Boolean = false, val message: String? = null, val createdOrderId: Long? = null,
 )
 class ShopViewModel(
     private val email: String, private val customers: CustomerRepository,
     private val catalog: CatalogRepository, private val shopping: ShoppingRepository,
+    private val orders: OrderRepository,
 ) : ViewModel() {
     private val mutableState = MutableStateFlow(ShopState())
     val state = mutableState.asStateFlow()
@@ -48,6 +49,33 @@ class ShopViewModel(
     fun favorite(productId: Long, enabled: Boolean) = change {
         shopping.setFavorite(customerId, productId, enabled)
     }
+    /** Confirms the current cart as an order using the existing atomic repository operation. */
+    fun confirmOrder() {
+        if (state.value.busy || state.value.loading || state.value.loadFailed) return
+        if (state.value.data.cart.isEmpty()) {
+            mutableState.update { it.copy(message = "Agrega al menos un producto antes de confirmar el pedido.") }
+            return
+        }
+        mutableState.update { it.copy(busy = true, message = null) }
+        viewModelScope.launch {
+            try {
+                val orderId = orders.createFromCart(customerId)
+                mutableState.update {
+                    it.copy(createdOrderId = orderId,
+                        message = "Pedido #$orderId confirmado. Puedes consultarlo en Pedidos.")
+                }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: IllegalArgumentException) {
+                mutableState.update { it.copy(message = e.message ?: "Revisa el carrito antes de confirmar.") }
+            } catch (_: Exception) {
+                mutableState.update { it.copy(message = "No se pudo confirmar el pedido. Inténtalo de nuevo.") }
+            } finally {
+                mutableState.update { it.copy(busy = false) }
+            }
+        }
+    }
+    fun clearCreatedOrder() { mutableState.update { it.copy(createdOrderId = null) } }
     private fun change(message: String? = null, operation: suspend () -> Unit) {
         if (state.value.busy || state.value.loading || state.value.loadFailed) return
         mutableState.update { it.copy(busy = true, message = null) }

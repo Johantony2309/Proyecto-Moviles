@@ -24,6 +24,6 @@ class AppContainer(context: Context) {
     val shopping: ShoppingRepository by lazy { RoomShoppingRepository(database) }
     val orders: OrderRepository by lazy { RoomOrderRepository(database) }
     val loginFactory = viewModelFactory { initializer { LoginViewModel(preferences) } }
-    fun shopFactory(email: String) = viewModelFactory { initializer { ShopViewModel(email, customers, catalog, shopping) } }
+    fun shopFactory(email: String) = viewModelFactory { initializer { ShopViewModel(email, customers, catalog, shopping, orders) } }
 
 }
