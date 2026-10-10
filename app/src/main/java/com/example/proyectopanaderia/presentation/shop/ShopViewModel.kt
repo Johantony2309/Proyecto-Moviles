@@ -42,6 +42,9 @@ class ShopViewModel(
     fun clearMessage() { mutableState.update { it.copy(message = null) } }
     fun examples() = change("Catálogo de ejemplo preparado.") { catalog.loadExampleCatalog() }
     fun add(productId: Long) = change("Producto añadido al carrito.") { shopping.changeQuantity(customerId, productId, 1) }
+    fun setQuantity(productId: Long, quantity: Int) = change {
+        shopping.setQuantity(customerId, productId, quantity)
+    }
     fun favorite(productId: Long, enabled: Boolean) = change {
         shopping.setFavorite(customerId, productId, enabled)
     }

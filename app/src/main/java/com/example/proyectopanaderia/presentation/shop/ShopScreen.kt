@@ -11,6 +11,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.proyectopanaderia.app.AppContainer
+import com.example.proyectopanaderia.presentation.cart.CartScreen
 import com.example.proyectopanaderia.presentation.catalog.CatalogScreen
 import com.example.proyectopanaderia.presentation.components.EmptyState
 import com.example.proyectopanaderia.presentation.favorites.FavoritesScreen
@@ -22,7 +23,7 @@ fun ShopScreen(email: String, container: AppContainer, settings: () -> Unit, sig
     val model: ShopViewModel = viewModel(key = "shop:$email", factory = container.shopFactory(email))
     val state by model.state.collectAsStateWithLifecycle()
     var menu by remember { mutableStateOf(false) }
-    var favoritesOpen by rememberSaveable { mutableStateOf(false) }
+    var section by rememberSaveable { mutableStateOf("catalog") }
     val snackbar = remember { SnackbarHostState() }
     LaunchedEffect(sessionMessage) {
         sessionMessage?.let { snackbar.showSnackbar(it); clearSessionMessage() }
@@ -49,8 +50,9 @@ fun ShopScreen(email: String, container: AppContainer, settings: () -> Unit, sig
                 Column(Modifier.fillMaxWidth().windowInsetsPadding(WindowInsets.navigationBars).padding(16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally) {
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        TextButton(onClick = { favoritesOpen = false }, enabled = !state.busy) { Text("Catálogo") }
-                        TextButton(onClick = { favoritesOpen = true }, enabled = !state.busy) { Text("Favoritos") }
+                        TextButton(onClick = { section = "catalog" }, enabled = !state.busy) { Text("Catálogo") }
+                        TextButton(onClick = { section = "favorites" }, enabled = !state.busy) { Text("Favoritos") }
+                        TextButton(onClick = { section = "cart" }, enabled = !state.busy) { Text("Carrito") }
                     }
                     Text("Guardados: ${state.data.favorites.size} · En carrito: ${state.data.cart.sumOf { it.quantity }}",
                         style = MaterialTheme.typography.bodySmall)
@@ -65,11 +67,18 @@ fun ShopScreen(email: String, container: AppContainer, settings: () -> Unit, sig
                 EmptyState("No pudimos abrir la panadería", "Tus datos guardados no se han eliminado.")
                 Button(onClick = model::load) { Text("Reintentar") }
             }
-            favoritesOpen -> FavoritesScreen(
+            section == "favorites" -> FavoritesScreen(
                 state.data.favorites,
                 state.busy,
                 model::add,
                 { productId -> model.favorite(productId, false) },
+                modifier,
+            )
+            section == "cart" -> CartScreen(
+                state.data.cart,
+                state.busy,
+                model::add,
+                model::setQuantity,
                 modifier,
             )
             else -> CatalogScreen(state.data.products, state.data.categories,
