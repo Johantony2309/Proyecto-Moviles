@@ -3,6 +3,7 @@ package com.example.proyectopanaderia.presentation.shop
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
@@ -12,6 +13,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.proyectopanaderia.app.AppContainer
 import com.example.proyectopanaderia.presentation.catalog.CatalogScreen
 import com.example.proyectopanaderia.presentation.components.EmptyState
+import com.example.proyectopanaderia.presentation.favorites.FavoritesScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -20,6 +22,7 @@ fun ShopScreen(email: String, container: AppContainer, settings: () -> Unit, sig
     val model: ShopViewModel = viewModel(key = "shop:$email", factory = container.shopFactory(email))
     val state by model.state.collectAsStateWithLifecycle()
     var menu by remember { mutableStateOf(false) }
+    var favoritesOpen by rememberSaveable { mutableStateOf(false) }
     val snackbar = remember { SnackbarHostState() }
     LaunchedEffect(sessionMessage) {
         sessionMessage?.let { snackbar.showSnackbar(it); clearSessionMessage() }
@@ -45,10 +48,12 @@ fun ShopScreen(email: String, container: AppContainer, settings: () -> Unit, sig
             Surface(tonalElevation = 3.dp) {
                 Column(Modifier.fillMaxWidth().windowInsetsPadding(WindowInsets.navigationBars).padding(16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("Inicio · Catálogo", style = MaterialTheme.typography.titleSmall)
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        TextButton(onClick = { favoritesOpen = false }, enabled = !state.busy) { Text("Catálogo") }
+                        TextButton(onClick = { favoritesOpen = true }, enabled = !state.busy) { Text("Favoritos") }
+                    }
                     Text("Guardados: ${state.data.favorites.size} · En carrito: ${state.data.cart.sumOf { it.quantity }}",
                         style = MaterialTheme.typography.bodySmall)
-                    Text("Favoritos y carrito: pantallas próximamente", style = MaterialTheme.typography.bodySmall)
                 }
             }
         },
@@ -60,6 +65,13 @@ fun ShopScreen(email: String, container: AppContainer, settings: () -> Unit, sig
                 EmptyState("No pudimos abrir la panadería", "Tus datos guardados no se han eliminado.")
                 Button(onClick = model::load) { Text("Reintentar") }
             }
+            favoritesOpen -> FavoritesScreen(
+                state.data.favorites,
+                state.busy,
+                model::add,
+                { productId -> model.favorite(productId, false) },
+                modifier,
+            )
             else -> CatalogScreen(state.data.products, state.data.categories,
                 state.data.favorites.map { it.id }.toSet(), state.busy,
                 model::add, model::favorite, model::examples, modifier)
