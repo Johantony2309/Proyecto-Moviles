@@ -7,6 +7,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.proyectopanaderia.domain.model.Product
 import com.example.proyectopanaderia.domain.validation.Money
@@ -29,8 +30,8 @@ fun FavoritesScreen(
     ) {
         item {
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                Heading("Tus favoritos")
-                Text("Tus antojos guardados de Pastelería Andony.")
+                Heading("Tus favoritos", textAlign = TextAlign.Center)
+                Text("Tus antojos guardados de Pastelería Andony.", textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
             }
         }
         if (favorites.isEmpty()) {
@@ -47,7 +48,7 @@ fun FavoritesScreen(
                         modifier = Modifier.fillMaxWidth().padding(12.dp),
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
-                        ProductPicture(product.name, Modifier.size(88.dp))
+                        ProductPicture(product.imageKey, Modifier.size(88.dp))
                         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                             Text(product.name, fontWeight = FontWeight.Bold)
                             Text(Money.format(product.priceCents), color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)

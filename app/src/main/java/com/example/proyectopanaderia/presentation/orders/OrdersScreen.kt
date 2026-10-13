@@ -11,6 +11,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -141,8 +142,8 @@ fun OrdersScreen(email: String, container: AppContainer, modifier: Modifier = Mo
     ) {
         item {
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                Heading("Tus pedidos")
-                Text("Consulta el historial de tus pedidos en Pastelería Andony.")
+                Heading("Tus pedidos", textAlign = TextAlign.Center)
+                Text("Consulta el historial de tus pedidos en Pastelería Andony.", textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
             }
         }
         item {

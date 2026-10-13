@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.proyectopanaderia.domain.model.CartItem
 import com.example.proyectopanaderia.domain.validation.Money
@@ -32,8 +33,8 @@ fun CartScreen(
     ) {
         item {
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                Heading("Tu carrito")
-                Text("Revisa tus antojos antes de continuar.")
+                Heading("Tu carrito", textAlign = TextAlign.Center)
+                Text("Revisa tus antojos antes de continuar.", textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
             }
         }
         if (cart.isEmpty()) {
@@ -50,7 +51,7 @@ fun CartScreen(
                         modifier = Modifier.fillMaxWidth().padding(12.dp),
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
-                        ProductPicture(item.product.name, Modifier.size(80.dp))
+                        ProductPicture(item.product.imageKey, Modifier.size(80.dp))
                         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                             Text(item.product.name, fontWeight = FontWeight.Bold)
                             Text(Money.format(item.product.priceCents), color = MaterialTheme.colorScheme.primary)
