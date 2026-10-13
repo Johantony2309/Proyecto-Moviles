@@ -7,8 +7,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.proyectopanaderia.domain.model.*
 import com.example.proyectopanaderia.domain.validation.Money
@@ -30,8 +32,8 @@ fun CatalogScreen(
         contentPadding = PaddingValues(20.dp), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
         item(span = { GridItemSpan(maxLineSpan) }) {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Heading("Tu próximo antojo.")
-                Text("Recién hecho, elegido por ti.")
+                Heading("Tu próximo antojo", textAlign = TextAlign.Center)
+                Text("Recién hecho, elegido por ti.", textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
                 OutlinedTextField(value = query, onValueChange = { query = it }, label = { Text("Buscar productos") }, singleLine = true, modifier = Modifier.fillMaxWidth())
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     item { FilterChip(selected = categoryId == null, onClick = { categoryId = null }, label = { Text("Todo") }) }
@@ -51,11 +53,15 @@ fun CatalogScreen(
             }
         }
         items(filtered, key = { it.id }) { p ->
-            Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
-                Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    ProductPicture(p.name, Modifier.fillMaxWidth().height(90.dp))
-                    Text(p.name, fontWeight = FontWeight.Bold)
-                    Text(p.description, style = MaterialTheme.typography.bodySmall)
+            Card(
+                modifier = Modifier.fillMaxHeight(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+            ) {
+                Column(Modifier.padding(12.dp).fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally) {
+                    ProductPicture(p.imageKey, Modifier.fillMaxWidth().height(90.dp))
+                    Text(p.name, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
+                    Text(p.description, style = MaterialTheme.typography.bodySmall, textAlign = TextAlign.Center)
                     Text(Money.format(p.priceCents), color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
                     if (!p.available) Text("No disponible", style = MaterialTheme.typography.bodySmall)
                     TextButton(onClick = { favorite(p.id, p.id !in favoriteIds) }, enabled = !busy, modifier = Modifier.fillMaxWidth()) {

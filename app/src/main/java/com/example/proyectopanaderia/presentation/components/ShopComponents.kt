@@ -17,8 +17,16 @@ fun EmptyState(title: String, description: String) {
 }
 
 @Composable
-fun ProductPicture(name: String, modifier: Modifier = Modifier) {
+fun ProductPicture(imageKey: String?, modifier: Modifier = Modifier) {
     Surface(modifier, shape = RoundedCornerShape(14.dp), color = MaterialTheme.colorScheme.primaryContainer) {
-        Image(painterResource(R.drawable.ic_bakery), contentDescription = null, modifier = Modifier.padding(8.dp))
+        Image(painterResource(productImageRes(imageKey)), contentDescription = null, modifier = Modifier.padding(8.dp))
     }
+}
+
+private fun productImageRes(imageKey: String?): Int = when (imageKey) {
+    "croissant" -> R.drawable.croissant
+    "cake" -> R.drawable.cake
+    "bread" -> R.drawable.bread
+    "roll" -> R.drawable.roll
+    else -> R.drawable.ic_bakery
 }

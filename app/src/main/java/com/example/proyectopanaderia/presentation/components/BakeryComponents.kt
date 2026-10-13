@@ -70,9 +70,9 @@ internal fun BrandHeader() {
 }
 
 @Composable
-internal fun Heading(text: String) {
+internal fun Heading(text: String, textAlign: TextAlign = TextAlign.Start) {
     Text(text, fontFamily = FontFamily.Serif, fontWeight = FontWeight.Bold, fontSize = 28.sp,
-        lineHeight = 34.sp, modifier = Modifier.semantics { heading() })
+        lineHeight = 34.sp, textAlign = textAlign, modifier = Modifier.fillMaxWidth().semantics { heading() })
 }
 
 @Composable
