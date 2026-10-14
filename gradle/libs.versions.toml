@@ -14,8 +14,10 @@ room = "2.8.4"
 ksp = "2.3.4"
 zxing = "3.5.3"
 materialIconsCore = "1.7.6"
+navigation = "2.8.5"
 
 [libraries]
+androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigation" }
 androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
 androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "room" }
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }

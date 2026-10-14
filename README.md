@@ -1,8 +1,8 @@
-# Panadería · acceso y catálogo local
+# Panadería · aplicación Android local
 
-Aplicación Android nativa en Kotlin y Jetpack Compose. Interfaces disponibles: acceso de demostración, splash, configuración local, catálogo, favoritos, carrito y pedidos. El catálogo permite buscar, filtrar por categoría, guardar favoritos y añadir productos al carrito mediante Room y MVVM. Favoritos permite consultar los productos guardados, quitarlos o añadirlos al carrito. Carrito permite modificar cantidades, quitar productos, consultar subtotal y total, y confirmar el pedido: la operación reutiliza `createFromCart()`, guarda el pedido con sus productos y cantidades, y vacía el carrito en una sola transacción. Pedidos permite consultar el historial con filtros Todos/Guardados/Archivados, fecha, total, estado y detalle de productos. Ticket dispone de una pantalla preparada para recibir un pedido existente y generar un QR local escaneable. La administración de maestros queda aplazada por decisión de alcance; el CRUD visual completo sigue pendiente. No hay registro ni servidor.
+Aplicación Android nativa en Kotlin y Jetpack Compose. Interfaces disponibles: acceso de demostración, splash, configuración local, catálogo, favoritos, carrito y pedidos. El catálogo permite buscar, filtrar por categoría, guardar favoritos y añadir productos al carrito mediante Room y MVVM. Favoritos permite consultar los productos guardados, quitarlos o añadirlos al carrito. Carrito permite modificar cantidades, quitar productos, consultar subtotal y total, y confirmar el pedido: la operación reutiliza `createFromCart()`, guarda el pedido con sus productos y cantidades, y vacía el carrito en una sola transacción. Pedidos permite consultar el historial con filtros Todos/Guardados/Archivados, fecha, total, estado y detalle de productos. Ticket consulta el pedido en Room por su identificador y genera un QR local escaneable. La administración de maestros queda aplazada por decisión de alcance; el CRUD visual completo sigue pendiente. No hay registro ni servidor.
 
-Consulta [la arquitectura, las tablas y su relación con Figma](docs/ARQUITECTURA.md). La documentación identifica las dos interfaces inferiores del diseño (Favoritos y Tus pedidos); la consulta y la creación de pedidos desde el carrito ya están implementadas.
+Consulta [la arquitectura y organización del estado](docs/ARQUITECTURA.md) y [el registro de correcciones de las fases 1, 2 y 3](docs/FASES_CORRECCION.md).
 
 ## Probar el acceso
 
@@ -53,10 +53,22 @@ Abrir esta carpeta en Android Studio, sincronizar Gradle y ejecutar el módulo `
 .\gradlew.bat :app:connectedDebugAndroidTest
 ```
 
-Las pruebas unitarias de `MoneyTest` verifican importes exactos y entradas inválidas; `OrderModelTest` verifica las reglas del modelo de pedidos preparado para otra etapa. `RoomWorkflowTest` contiene pruebas instrumentadas de transacciones y datos de ejemplo, que requieren un dispositivo y no se han ejecutado en esta entrega.
+Las pruebas unitarias de `MoneyTest` verifican importes exactos y entradas inválidas; `OrderModelTest` verifica las reglas del modelo de pedidos. `RoomWorkflowTest` contiene pruebas instrumentadas de transacciones y datos de ejemplo, que utilizan una base aislada en un dispositivo.
 
 Las pruebas unitarias de `DemoAccountTest` comprueban validación y rechazo de credenciales incorrectas. Las pruebas instrumentadas de `LocalPreferencesTest` utilizan archivos reales de DataStore en Android para comprobar las opciones predeterminadas, borrado de datos recordados, reapertura del almacenamiento y cierre de sesión. Se ejecutan en Android porque el reemplazo de archivos de su implementación no funciona igual al ejecutarla directamente sobre Windows. `LoginFlowTest` comprueba errores del formulario, acceso, configuración, recreación y cierre de sesión.
 
 Referencias oficiales: [Preferences DataStore](https://developer.android.com/topic/libraries/architecture/datastore) y [SplashScreen](https://developer.android.com/develop/ui/views/launch/splash-screen/migrate).
 
-El ticket recibe un `Order` desde el módulo de pedidos, usa su `qrPayload` y no crea ni modifica pedidos. La creación desde el carrito y su consulta en **Pedidos** ya están conectadas; falta que la pantalla de pedidos abra `TicketScreen` con el pedido seleccionado y gestione el regreso.
+La navegación se define en `BakeryApp` con un único `NavHost` y `NavController`: acceso, configuración, catálogo, favoritos, carrito, pedidos y ticket. `AppDestinations` centraliza las rutas. La barra inferior guarda y restaura el estado de las pestañas; al cerrar sesión se eliminan el historial autenticado y sus estados guardados.
+
+Pedidos abre `ticket/{orderId}` con un argumento `Long`. `TicketViewModel` consulta el pedido del cliente actual mediante `OrderRepository.order()` y observa Room, sin recibir una copia del pedido desde otra pantalla. Navigation conserva el argumento al recrear la actividad. El ticket no crea ni modifica pedidos.
+
+`NavigationFlowTest` verifica pestañas, Configuración, Atrás, recreación y cierre de sesión. `OrdersRegressionTest` verifica filtros repetidos, ticket, giro y regreso a Pedidos. Se ejecutan con un emulador o dispositivo conectado.
+
+## Organización de pantallas y estado
+
+Catálogo, Favoritos y Carrito tienen ViewModels independientes. Pedidos separa su ViewModel y su estado del archivo visual. Las funciones Route obtienen los ViewModels y recogen el estado con `collectAsStateWithLifecycle()`; Content recibe datos y callbacks.
+
+Cada ViewModel expone un único StateFlow de solo lectura. Las pantallas de negocio usan `ScreenState.Loading/Content/Error` y los avisos puntuales usan un canal expuesto como Flow. Confirmar un pedido emite `OrderCreated`, que el coordinador de navegación convierte en la apertura de Pedidos. Los datos confirmados permanecen en Room.
+
+`ViewModelStateTest` cubre errores y reintentos, sincronización entre pantallas, restauración de filtros y confirmación duplicada. El registro de fases contiene los resultados de la ejecución en el teléfono USB.

@@ -44,10 +44,9 @@ import com.example.proyectopanaderia.ui.theme.ProyectoPanaderiaTheme
 import com.example.proyectopanaderia.presentation.components.*
 
 @Composable
-internal fun SettingsScreen(
+internal fun SettingsContent(
     settings: LocalSettings,
     busy: Boolean,
-    message: String?,
     rememberEmail: (Boolean) -> Unit,
     keepSession: (Boolean) -> Unit,
     back: () -> Unit,
@@ -62,7 +61,6 @@ internal fun SettingsScreen(
     PreferenceRow("Mantener mi sesión", "Entra sin escribir tus datos al volver a abrir la app. Actívalo solo en tu dispositivo personal.",
         settings.keepSession, !busy, keepSession)
     if (busy) LinearProgressIndicator(Modifier.fillMaxWidth())
-    Message(message)
     InfoCard {
         Text("Tus preferencias se quedan aquí", fontWeight = FontWeight.Bold)
         Text("Se guardan únicamente en este dispositivo. La contraseña no se almacena. Al desactivar una opción, se elimina el dato que esa opción recuerda.",
@@ -87,5 +85,5 @@ private fun PreferenceRow(title: String, description: String, checked: Boolean, 
 @Preview(showBackground = true, widthDp = 390, heightDp = 844)
 @Composable
 private fun SettingsPreview() {
-    ProyectoPanaderiaTheme { ScreenSurface { SettingsScreen(LocalSettings(), false, null, {}, {}, {}) } }
+    ProyectoPanaderiaTheme { ScreenSurface { SettingsContent(LocalSettings(), false, {}, {}, {}) } }
 }

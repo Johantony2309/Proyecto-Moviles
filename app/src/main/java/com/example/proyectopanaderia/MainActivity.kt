@@ -24,6 +24,6 @@ class MainActivity : ComponentActivity() {
             statusBarStyle = SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT),
             navigationBarStyle = SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT),
         )
-        setContent { ProyectoPanaderiaTheme { BakeryApp(model, container) } }
+        setContent { ProyectoPanaderiaTheme { BakeryApp(container) } }
     }
 }

@@ -10,42 +10,21 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.proyectopanaderia.presentation.common.ScreenState
 import com.example.proyectopanaderia.R
-import com.example.proyectopanaderia.app.AppContainer
-import com.example.proyectopanaderia.presentation.cart.CartScreen
-import com.example.proyectopanaderia.presentation.catalog.CatalogScreen
-import com.example.proyectopanaderia.presentation.components.EmptyState
-import com.example.proyectopanaderia.presentation.favorites.FavoritesScreen
-import com.example.proyectopanaderia.presentation.orders.OrdersScreen
+import com.example.proyectopanaderia.app.AppDestinations
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ShopScreen(email: String, container: AppContainer, settings: () -> Unit, signOut: () -> Unit,
-    sessionBusy: Boolean, sessionMessage: String?, clearSessionMessage: () -> Unit) {
-    val model: ShopViewModel = viewModel(key = "shop:$email", factory = container.shopFactory(email))
-    val state by model.state.collectAsStateWithLifecycle()
+fun ShopContent(state: ScreenState<ShopCounts>, retry: () -> Unit, destination: String, navigate: (String) -> Unit,
+    settings: () -> Unit, signOut: () -> Unit, sessionBusy: Boolean,
+    content: @Composable (Modifier) -> Unit) {
     var menu by remember { mutableStateOf(false) }
-    var section by rememberSaveable { mutableStateOf("catalog") }
-    val snackbar = remember { SnackbarHostState() }
-    LaunchedEffect(sessionMessage) {
-        sessionMessage?.let { snackbar.showSnackbar(it); clearSessionMessage() }
-    }
-    LaunchedEffect(state.message) {
-        state.message?.let { snackbar.showSnackbar(it); model.clearMessage() }
-    }
-    LaunchedEffect(state.createdOrderId) {
-        if (state.createdOrderId != null) {
-            model.clearCreatedOrder()
-            section = "orders"
-        }
-    }
+    val counts = (state as? ScreenState.Content)?.data
     Scaffold(
         contentWindowInsets = WindowInsets.safeDrawing,
         topBar = {
@@ -63,50 +42,49 @@ fun ShopScreen(email: String, container: AppContainer, settings: () -> Unit, sig
                         Icon(Icons.Filled.AccountCircle, contentDescription = "Mi cuenta")
                     }
                     DropdownMenu(menu, { menu = false }) {
-                        DropdownMenuItem(text = { Text("Configuración") }, onClick = { menu = false; settings() }, enabled = !state.busy)
-                        DropdownMenuItem(text = { Text("Cerrar sesión") }, onClick = { menu = false; signOut() }, enabled = !state.busy && !sessionBusy)
+                        DropdownMenuItem(text = { Text("Configuración") }, onClick = { menu = false; settings() }, enabled = !sessionBusy)
+                        DropdownMenuItem(text = { Text("Cerrar sesión") }, onClick = { menu = false; signOut() }, enabled = !sessionBusy)
                     }
                 }
             })
         },
-        snackbarHost = { SnackbarHost(snackbar) },
         bottomBar = {
             NavigationBar {
                 NavigationBarItem(
-                    selected = section == "catalog",
-                    onClick = { section = "catalog" },
-                    enabled = !state.busy,
+                    selected = destination == AppDestinations.CATALOG,
+                    onClick = { navigate(AppDestinations.CATALOG) },
+                    enabled = !sessionBusy,
                     icon = { Icon(Icons.Filled.Home, contentDescription = "Catálogo") },
                     label = { Text("Catálogo") },
                 )
                 NavigationBarItem(
-                    selected = section == "favorites",
-                    onClick = { section = "favorites" },
-                    enabled = !state.busy,
+                    selected = destination == AppDestinations.FAVORITES,
+                    onClick = { navigate(AppDestinations.FAVORITES) },
+                    enabled = !sessionBusy,
                     icon = {
                         BadgedBox(badge = {
-                            val count = state.data.favorites.size
+                            val count = counts?.favorites ?: 0
                             if (count > 0) Badge { Text(count.toString()) }
                         }) { Icon(Icons.Filled.Favorite, contentDescription = "Favoritos") }
                     },
                     label = { Text("Favoritos") },
                 )
                 NavigationBarItem(
-                    selected = section == "cart",
-                    onClick = { section = "cart" },
-                    enabled = !state.busy,
+                    selected = destination == AppDestinations.CART,
+                    onClick = { navigate(AppDestinations.CART) },
+                    enabled = !sessionBusy,
                     icon = {
                         BadgedBox(badge = {
-                            val count = state.data.cart.sumOf { it.quantity }
+                            val count = counts?.cart ?: 0
                             if (count > 0) Badge { Text(count.toString()) }
                         }) { Icon(Icons.Filled.ShoppingCart, contentDescription = "Carrito") }
                     },
                     label = { Text("Carrito") },
                 )
                 NavigationBarItem(
-                    selected = section == "orders",
-                    onClick = { section = "orders" },
-                    enabled = !state.busy,
+                    selected = destination == AppDestinations.ORDERS || destination == AppDestinations.TICKET,
+                    onClick = { navigate(AppDestinations.ORDERS) },
+                    enabled = !sessionBusy,
                     icon = { Icon(Icons.AutoMirrored.Filled.List, contentDescription = "Pedidos") },
                     label = { Text("Pedidos") },
                 )
@@ -114,31 +92,9 @@ fun ShopScreen(email: String, container: AppContainer, settings: () -> Unit, sig
         },
     ) { padding ->
         val modifier = Modifier.fillMaxSize().padding(padding).consumeWindowInsets(padding)
-        when {
-            state.loading -> Box(modifier, contentAlignment = Alignment.Center) { CircularProgressIndicator() }
-            state.loadFailed -> Column(modifier.padding(24.dp)) {
-                EmptyState("No pudimos abrir la panadería", "Tus datos guardados no se han eliminado.")
-                Button(onClick = model::load) { Text("Reintentar") }
-            }
-            section == "favorites" -> FavoritesScreen(
-                state.data.favorites,
-                state.busy,
-                model::add,
-                { productId -> model.favorite(productId, false) },
-                modifier,
-            )
-            section == "cart" -> CartScreen(
-                state.data.cart,
-                state.busy,
-                model::add,
-                model::setQuantity,
-                model::confirmOrder,
-                modifier,
-            )
-            section == "orders" -> OrdersScreen(email, container, modifier)
-            else -> CatalogScreen(state.data.products, state.data.categories,
-                state.data.favorites.map { it.id }.toSet(), state.busy,
-                model::add, model::favorite, model::examples, modifier)
+        Column(modifier) {
+            if (state is ScreenState.Error) TextButton(onClick = retry) { Text("Reintentar contadores") }
+            content(Modifier.fillMaxWidth().weight(1f))
         }
     }
 }

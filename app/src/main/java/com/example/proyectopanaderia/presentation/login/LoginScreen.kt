@@ -44,24 +44,22 @@ import com.example.proyectopanaderia.ui.theme.ProyectoPanaderiaTheme
 import com.example.proyectopanaderia.presentation.components.*
 
 @Composable
-internal fun ColumnScope.LoginScreen(
+internal fun ColumnScope.LoginContent(
     state: LoginState,
+    form: LoginForm,
+    changeForm: (LoginForm) -> Unit,
     signIn: (String, String) -> Unit,
-    clearMessage: () -> Unit,
+    clearAuthError: () -> Unit,
     openSettings: () -> Unit,
 ) {
-    var email by rememberSaveable { mutableStateOf(state.settings.savedEmail) }
-    // Password stays only in memory; never save it to a Bundle or DataStore.
-    var password by remember { mutableStateOf("") }
-    var passwordVisible by remember { mutableStateOf(false) }
-    var submitted by rememberSaveable { mutableStateOf(false) }
+    val (email, password, passwordVisible, submitted) = form
     val emailFocus = remember { FocusRequester() }
     val passwordFocus = remember { FocusRequester() }
     val focusManager = LocalFocusManager.current
     val emailError = if (submitted) DemoAccount.emailError(email) else null
     val passwordError = if (submitted && password.isBlank()) "Escribe tu contraseña." else null
     val submit: () -> Unit = {
-        submitted = true
+        changeForm(form.copy(submitted = true))
         if (DemoAccount.emailError(email) != null) emailFocus.requestFocus()
         else if (password.isBlank()) passwordFocus.requestFocus()
         else {
@@ -75,7 +73,7 @@ internal fun ColumnScope.LoginScreen(
         Text("Entra y siéntete como en casa.", color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
     OutlinedTextField(
-        value = email, onValueChange = { email = it; clearMessage() },
+        value = email, onValueChange = { changeForm(form.copy(email = it)); clearAuthError() },
         label = { Text("Correo electrónico") }, placeholder = { Text("nombre@correo.com") },
         enabled = !state.busy, singleLine = true, isError = emailError != null,
         supportingText = emailError?.let { error -> { Text(error) } },
@@ -84,13 +82,13 @@ internal fun ColumnScope.LoginScreen(
         modifier = Modifier.fillMaxWidth().focusRequester(emailFocus), shape = RoundedCornerShape(12.dp),
     )
     OutlinedTextField(
-        value = password, onValueChange = { password = it; clearMessage() },
+        value = password, onValueChange = { changeForm(form.copy(password = it)); clearAuthError() },
         label = { Text("Contraseña") }, enabled = !state.busy, singleLine = true,
         isError = passwordError != null,
         supportingText = passwordError?.let { error -> { Text(error) } },
         visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
         trailingIcon = {
-            TextButton(onClick = { passwordVisible = !passwordVisible }, enabled = !state.busy) {
+            TextButton(onClick = { changeForm(form.copy(passwordVisible = !passwordVisible)) }, enabled = !state.busy) {
                 Text(if (passwordVisible) "Ocultar" else "Mostrar")
             }
         },
@@ -98,7 +96,7 @@ internal fun ColumnScope.LoginScreen(
         keyboardActions = KeyboardActions(onDone = { submit() }),
         modifier = Modifier.fillMaxWidth().focusRequester(passwordFocus), shape = RoundedCornerShape(12.dp),
     )
-    Message(state.message, isError = true)
+    Message(state.authError, isError = true)
     Button(onClick = submit, enabled = !state.busy, modifier = Modifier.fillMaxWidth().heightIn(min = 54.dp),
         shape = RoundedCornerShape(12.dp)) {
         if (state.busy) CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp, color = MaterialTheme.colorScheme.onPrimary)
@@ -110,10 +108,8 @@ internal fun ColumnScope.LoginScreen(
         Text("Correo: ${DemoAccount.email}", style = MaterialTheme.typography.bodyMedium)
         Text("Contraseña: ${DemoAccount.password}", style = MaterialTheme.typography.bodyMedium)
         TextButton(onClick = {
-            email = DemoAccount.email
-            password = DemoAccount.password
-            submitted = false
-            clearMessage()
+            changeForm(form.copy(email = DemoAccount.email, password = DemoAccount.password, submitted = false))
+            clearAuthError()
         }, enabled = !state.busy) { Text("Usar datos de demostración") }
     }
     TextButton(onClick = openSettings, enabled = !state.busy, modifier = Modifier.align(Alignment.CenterHorizontally)) {
@@ -124,5 +120,5 @@ internal fun ColumnScope.LoginScreen(
 @Preview(showBackground = true, widthDp = 390, heightDp = 844)
 @Composable
 private fun LoginPreview() {
-    ProyectoPanaderiaTheme { ScreenSurface { LoginScreen(LoginState(loading = false), { _, _ -> }, {}, {}) } }
+    ProyectoPanaderiaTheme { ScreenSurface { LoginContent(LoginState(status = LoginStatus.READY), LoginForm(), {}, { _, _ -> }, {}, {}) } }
 }

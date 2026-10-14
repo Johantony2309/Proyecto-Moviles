@@ -1,5 +1,6 @@
 package com.example.proyectopanaderia.presentation.ticket
 
+import com.example.proyectopanaderia.presentation.common.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -128,3 +129,15 @@ private fun TicketUnavailable(onBack: () -> Unit, modifier: Modifier) {
 
 private fun formatDate(timestamp: Long): String =
     SimpleDateFormat("dd 'de' MMMM 'de' yyyy, HH:mm", Locale("es", "ES")).format(Date(timestamp))
+@Composable
+fun TicketContent(state: ScreenState<Order?>,
+    retry: () -> Unit, onBack: () -> Unit, modifier: Modifier = Modifier) {
+    Column(modifier) {
+        if (state !is ScreenState.Content) {
+            TextButton(onClick = onBack) { Text("Volver") }
+        }
+        ScreenContent(state, retry, Modifier.fillMaxSize()) { order, _ ->
+            TicketScreen(order, onBack, Modifier.fillMaxSize())
+        }
+    }
+}

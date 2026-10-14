@@ -1,224 +1,73 @@
 package com.example.proyectopanaderia.presentation.orders
-
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.lifecycle.viewmodel.initializer
-import androidx.lifecycle.viewmodel.viewModelFactory
-import com.example.proyectopanaderia.app.AppContainer
-import com.example.proyectopanaderia.domain.model.Order
-import com.example.proyectopanaderia.domain.model.OrderItem
-import com.example.proyectopanaderia.domain.model.OrderStatus
-import com.example.proyectopanaderia.domain.repository.CustomerRepository
-import com.example.proyectopanaderia.domain.repository.OrderRepository
+import com.example.proyectopanaderia.domain.model.*
 import com.example.proyectopanaderia.domain.validation.Money
-import com.example.proyectopanaderia.presentation.components.EmptyState
-import com.example.proyectopanaderia.presentation.components.Heading
-import com.example.proyectopanaderia.presentation.components.Message
-import com.example.proyectopanaderia.presentation.ticket.TicketScreen
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
+import com.example.proyectopanaderia.presentation.components.*
+import com.example.proyectopanaderia.presentation.common.*
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-/** State of the orders screen. */
-data class OrdersState(
-    val orders: List<Order> = emptyList(),
-    val filter: OrderStatus? = null,
-    val loading: Boolean = true,
-    val loadFailed: Boolean = false,
-    val busy: Boolean = false,
-    val message: String? = null,
-    val messageIsError: Boolean = false,
-)
-
-/** Observes the orders of one customer. Archiving is reversible; orders are never deleted here. */
-@OptIn(ExperimentalCoroutinesApi::class)
-class OrdersViewModel(
-    private val email: String,
-    private val customers: CustomerRepository,
-    private val orders: OrderRepository,
-) : ViewModel() {
-    private val mutableState = MutableStateFlow(OrdersState())
-    val state = mutableState.asStateFlow()
-    private var customerId = 0L
-    private var observer: Job? = null
-    init { load() }
-
-    fun load() {
-        observer?.cancel()
-        mutableState.update { it.copy(loading = true, loadFailed = false) }
-        observer = viewModelScope.launch {
-            try {
-                customerId = customers.ensureLocalCustomer(email)
-                mutableState.map { it.filter }.distinctUntilChanged()
-                    .flatMapLatest { status -> orders.orders(customerId, status) }
-                    .collect { list ->
-                        mutableState.update { it.copy(orders = list, loading = false, loadFailed = false) }
-                    }
-            } catch (e: CancellationException) {
-                throw e
-            } catch (_: Exception) {
-                mutableState.update { it.copy(loading = false, loadFailed = true) }
-            }
-        }
-    }
-
-    fun setFilter(status: OrderStatus?) {
-        mutableState.update {
-            if (it.filter == status) it
-            else it.copy(filter = status, loading = true, loadFailed = false)
-        }
-    }
-
-    /** Archives a saved order or recovers an archived one. The Room flow refreshes the list. */
-    fun setArchived(orderId: Long, archived: Boolean) {
-        if (state.value.busy || state.value.loading || state.value.loadFailed) return
-        mutableState.update { it.copy(busy = true, message = null, messageIsError = false) }
-        viewModelScope.launch {
-            try {
-                orders.setArchived(customerId, orderId, archived)
-                mutableState.update {
-                    it.copy(messageIsError = false, message = if (archived) {
-                        "Pedido archivado. Lo encontrarás en Archivados."
-                    } else {
-                        "Pedido recuperado. Lo encontrarás en Guardados."
-                    })
-                }
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: IllegalArgumentException) {
-                mutableState.update { it.copy(messageIsError = true,
-                    message = e.message ?: "No pudimos actualizar el pedido.") }
-            } catch (_: Exception) {
-                mutableState.update { it.copy(messageIsError = true,
-                    message = "No pudimos actualizar el pedido. Inténtalo de nuevo.") }
-            } finally {
-                mutableState.update { it.copy(busy = false) }
-            }
-        }
-    }
-
-    fun clearMessage() { mutableState.update { it.copy(message = null, messageIsError = false) } }
-}
-
 @Composable
-fun OrdersScreen(email: String, container: AppContainer, modifier: Modifier = Modifier) {
-    val model: OrdersViewModel = viewModel(
-        key = "orders:$email",
-        factory = viewModelFactory {
-            initializer { OrdersViewModel(email, container.customers, container.orders) }
-        },
-    )
-    val state by model.state.collectAsStateWithLifecycle()
-    var expandedId by rememberSaveable { mutableStateOf<Long?>(null) }
-    // Save only the identity; Room remains the source of the restored ticket's data.
-    var ticketOrderId by rememberSaveable(email) { mutableStateOf<Long?>(null) }
-    if (ticketOrderId != null) {
-        BackHandler { ticketOrderId = null }
-        when {
-            state.loading || state.loadFailed -> Column(
-                modifier = modifier.padding(20.dp),
-                verticalArrangement = Arrangement.spacedBy(14.dp),
-            ) {
-                TextButton(onClick = { ticketOrderId = null }) { Text("Volver") }
-                if (state.loading) {
-                    CircularProgressIndicator()
-                } else {
-                    EmptyState("No pudimos abrir el ticket", "Inténtalo de nuevo. Tu pedido sigue guardado.")
-                    Button(onClick = model::load) { Text("Reintentar") }
-                }
-            }
-            else -> TicketScreen(
-                state.orders.firstOrNull { it.id == ticketOrderId },
-                onBack = { ticketOrderId = null },
-                modifier = modifier,
-            )
-        }
-        return
-    }
-
-    LazyColumn(
-        modifier = modifier,
-        contentPadding = PaddingValues(20.dp),
-        verticalArrangement = Arrangement.spacedBy(14.dp),
-    ) {
-        item {
-            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                Heading("Tus pedidos", textAlign = TextAlign.Center)
-                Text("Consulta el historial de tus pedidos en Pastelería Andony.", textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
-            }
-        }
-        item {
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                FilterChip(selected = state.filter == null, onClick = { model.setFilter(null) },
-                    enabled = !state.busy, label = { Text("Todos") })
-                FilterChip(selected = state.filter == OrderStatus.SAVED, onClick = { model.setFilter(OrderStatus.SAVED) },
-                    enabled = !state.busy, label = { Text("Guardados") })
-                FilterChip(selected = state.filter == OrderStatus.ARCHIVED, onClick = { model.setFilter(OrderStatus.ARCHIVED) },
-                    enabled = !state.busy, label = { Text("Archivados") })
-            }
-        }
-        if (state.busy) item { LinearProgressIndicator(Modifier.fillMaxWidth()) }
-        state.message?.let { message ->
+fun OrdersContent(uiState: ScreenState<OrdersState>, retry: () -> Unit,
+    setFilter: (OrderStatus?) -> Unit, toggle: (Long) -> Unit,
+    setArchived: (Long, Boolean) -> Unit, onViewTicket: (Long) -> Unit,
+    modifier: Modifier = Modifier) {
+    ScreenContent(uiState, retry, modifier) { state, busy ->
+        LazyColumn(
+            modifier = modifier,
+            contentPadding = PaddingValues(20.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp),
+        ) {
             item {
-                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Message(message, isError = state.messageIsError)
-                    TextButton(onClick = model::clearMessage) { Text("Descartar") }
+                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Heading("Tus pedidos", textAlign = TextAlign.Center)
+                    Text("Consulta el historial de tus pedidos en Pastelería Andony.", textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
                 }
             }
-        }
-        when {
-            state.loading -> item {
-                Box(Modifier.fillMaxWidth().padding(24.dp), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator()
+            item {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    FilterChip(selected = state.filter == null, onClick = { setFilter(null) },
+                        enabled = !busy, label = { Text("Todos") })
+                    FilterChip(selected = state.filter == OrderStatus.SAVED, onClick = { setFilter(OrderStatus.SAVED) },
+                        enabled = !busy, label = { Text("Guardados") })
+                    FilterChip(selected = state.filter == OrderStatus.ARCHIVED, onClick = { setFilter(OrderStatus.ARCHIVED) },
+                        enabled = !busy, label = { Text("Archivados") })
                 }
             }
-            state.loadFailed -> item {
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    EmptyState("No pudimos abrir tus pedidos", "Tus pedidos guardados no se han eliminado.")
-                    Button(onClick = model::load) { Text("Reintentar") }
+            if (busy) item { LinearProgressIndicator(Modifier.fillMaxWidth()) }
+            when {
+                state.orders.isEmpty() -> item {
+                    EmptyState(
+                        if (state.filter == null) "Aún no tienes pedidos" else "No hay pedidos en este filtro",
+                        if (state.filter == null) "Cuando confirmes un pedido aparecerá aquí con su detalle."
+                        else "Prueba con Todos para ver el historial completo.",
+                    )
                 }
-            }
-            state.orders.isEmpty() -> item {
-                EmptyState(
-                    if (state.filter == null) "Aún no tienes pedidos" else "No hay pedidos en este filtro",
-                    if (state.filter == null) "Cuando confirmes un pedido aparecerá aquí con su detalle."
-                    else "Prueba con Todos para ver el historial completo.",
-                )
-            }
-            else -> items(state.orders, key = { it.id }) { order ->
-                OrderCard(
-                    order = order,
-                    expanded = expandedId == order.id,
-                    busy = state.busy,
-                    onToggle = { expandedId = if (expandedId == order.id) null else order.id },
-                    onViewTicket = { ticketOrderId = order.id },
-                    onSetArchived = model::setArchived,
-                )
+                else -> items(state.orders, key = { it.id }) { order ->
+                    OrderCard(
+                        order = order,
+                        expanded = state.expandedId == order.id,
+                        busy = busy,
+                        onToggle = { toggle(order.id) },
+                        onViewTicket = { onViewTicket(order.id) },
+                        onSetArchived = setArchived,
+                    )
+                }
             }
         }
     }
 }
-
 @Composable
 private fun OrderCard(
     order: Order,

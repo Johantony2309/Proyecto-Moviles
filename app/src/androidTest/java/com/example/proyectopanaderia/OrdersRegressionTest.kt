@@ -56,6 +56,7 @@ class OrdersRegressionTest {
             }
             compose.waitUntil(10_000) { exists("Pedidos") }
             compose.onNodeWithText("Pedidos").performClick()
+            compose.waitUntil(10_000) { compose.onNodeWithText("Todos").isDisplayed() }
             for ((filter, id) in listOf("Todos" to ids.last(), "Guardados" to ids.first(), "Archivados" to ids.last())) {
                 compose.onNodeWithText(filter).performClick()
                 compose.waitUntil(10_000) { exists("Pedido #$id") }
@@ -67,7 +68,7 @@ class OrdersRegressionTest {
             // The archived test order is the newest and therefore the first card.
             compose.onAllNodesWithText("Ver ticket QR").onFirst().performScrollTo().performClick()
             val ticketTitle = "Ticket de pedido #${ids.last()}"
-            compose.onNodeWithText(ticketTitle).assertExists()
+            compose.waitUntil(10_000) { exists(ticketTitle) }
             compose.activityRule.scenario.recreate()
             compose.waitUntil(10_000) { exists(ticketTitle) }
             compose.activityRule.scenario.onActivity {
@@ -77,7 +78,20 @@ class OrdersRegressionTest {
                 compose.activity.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
             }
             compose.waitUntil(10_000) { exists(ticketTitle) }
+            compose.onNodeWithContentDescription("Mi cuenta").performClick()
+            compose.onNodeWithText("Configuración", substring = false).performClick()
+            compose.onNodeWithText("A tu manera").assertExists()
+            androidx.test.espresso.Espresso.pressBack()
+            compose.waitUntil(10_000) { exists(ticketTitle) }
             compose.onNodeWithText("Volver").performScrollTo().performClick()
+            compose.onNode(hasScrollToIndexAction()).performScrollToIndex(0)
+            compose.onNodeWithText("Tus pedidos").assertExists()
+            compose.onNodeWithText("Archivados").assertIsSelected()
+            compose.onAllNodesWithText("Ver ticket QR").onFirst().performScrollTo().performClick()
+            compose.waitUntil(10_000) { exists(ticketTitle) }
+            androidx.test.espresso.Espresso.pressBack()
+            // Navigation restores the list's scroll position; its header may be off-screen.
+            compose.onNode(hasScrollToIndexAction()).performScrollToIndex(0)
             compose.onNodeWithText("Tus pedidos").assertExists()
             compose.onNodeWithText("Archivados").assertIsSelected()
         } finally {

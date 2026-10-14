@@ -1,61 +1,65 @@
-# Arquitectura y modelo local de Panadería
+# Arquitectura y estado de Panadería
 
-## Alcance de esta etapa
+La app incluye acceso de demostración, configuración, catálogo, favoritos, carrito, pedidos y ticket QR. Funciona localmente con Room y Preferences DataStore. La administración visual completa de maestros y otras acciones CRUD quedan fuera de estas correcciones.
 
-Esta entrega llega únicamente hasta la pantalla 02 de Figma: Catálogo, después del inicio de sesión. Incluye búsqueda, filtros, lectura de productos, favoritos y adición al carrito con persistencia Room y MVVM. Las pantallas de favoritos, carrito, ticket, historial y administración se dejan para otra etapa. Se conserva la base de datos y sus repositorios preparados; el CRUD completo accesible al usuario sigue pendiente.
+## Capas y dependencias
 
-El acceso y las preferencias mantienen el archivo `panaderia_local` y las mismas claves; no se pierden los ajustes existentes. La base Room `panaderia.db` es independiente y se abre al usar un repositorio de negocio. No se agregan datos ficticios al historial ni se reinserta automáticamente información que el usuario elimine.
+`Route → ViewModel → contrato de repositorio → implementación → DAO/Room o DataStore`.
 
-## Lectura de las interfaces de Figma
+- `app/AppContainer.kt`: una instancia de Room por proceso, repositorios y fábricas de ViewModels con inyección por constructor. No se utiliza Hilt.
+- `app/BakeryApp.kt`: NavHost, control de sesión, selección de pestañas y efectos de navegación/avisos.
+- `presentation/<funcionalidad>/*Route.kt`: obtiene el ViewModel, recoge su estado con `collectAsStateWithLifecycle()` y conecta sus acciones al Content.
+- `presentation/<funcionalidad>/*Screen.kt`: contiene las funciones `*Content`, que reciben estado y callbacks, sin acceder a repositorios ni obtener ViewModels.
+- `presentation/common/`: estados excluyentes, mecánica compartida de carga/operaciones y consumo de eventos.
+- `domain/`: modelos, contratos, validación monetaria y cuenta demo.
+- `data/`: entidades, DAO, relaciones, repositorios Room y preferencias.
 
-Referencia: [Panadería — Interfaces](https://www.figma.com/design/cBI3iCNtyTH0wDwsSIY8cW/Panader%C3%ADa-%E2%80%94-Interfaces?node-id=0-1).
+## Responsabilidad y alcance de cada ViewModel
 
-La revisión se hizo visualmente en el navegador porque el conector continúa limitado por su cuota. Las dos imágenes inferiores se consideran interfaces completas: **Tus favoritos** y **Tus pedidos**. No son recursos decorativos. No se ha comprobado el cableado de todas las interacciones del prototipo.
-
-| Interfaz observada | Información y acciones | Soporte local |
+| ViewModel | Estado y acciones | Alcance |
 | --- | --- | --- |
-| Acceso | Correo, contraseña y acceso. El prototipo también muestra registro, recuperación y proveedores sociales. | Demo local ya implementada; registro y proveedores no se incluyen en esta etapa. |
-| Catálogo | Buscar; filtrar Todo/Panes/Pasteles/Dulces; imagen, nombre, descripción, precio; favorito y añadir. | Categorías, productos, favoritos y carrito. “Todo” es un filtro, no una categoría persistida. |
-| Tu carrito | Cantidades, quitar producto, subtotal, retiro sin costo y crear pedido. | Carrito por cliente y creación atómica del pedido con sus detalles. |
-| Ticket QR | Código del pedido, QR, resumen y total. Aclara que no es comprobante de pago y no se ha enviado a la panadería. | Token único local y detalles históricos. No se requiere tabla de pagos ni servidor. |
-| Tus favoritos | Productos guardados; quitar favorito; añadir al carrito. | Relación única cliente–producto. |
-| Tus pedidos | Filtros Todos/Guardados/Archivados, fecha, importe, ver pedido y QR, repetir. | Pedidos con estado SAVED/ARCHIVED y sus detalles. |
+| LoginViewModel | Carga de preferencias, sesión, errores de credenciales y cambios de preferencias | Activity; compartido por LoginRoute, SettingsRoute y coordinador de sesión |
+| CatalogViewModel | Productos filtrados, categorías, favoritos, búsqueda, adición al carrito y ejemplos | Destino Catálogo |
+| FavoritesViewModel | Productos favoritos, quitar favorito y añadir al carrito | Destino Favoritos |
+| CartViewModel | Líneas del carrito, cantidades y confirmación | Destino Carrito |
+| OrdersViewModel | Pedidos, filtro, detalle expandido, archivar y recuperar | Destino Pedidos |
+| TicketViewModel | Pedido consultado por cliente e identificador | Destino Ticket |
+| ShopViewModel | Solo cantidades de favoritos y carrito para la barra inferior | Grafo autenticado SHOP |
 
-El diseño actual no muestra formularios de administración de maestros ni edición/eliminación completa de pedidos. Para cumplir el CRUD académico, la próxima fase deberá añadir esos controles y sus confirmaciones, manteniendo el estilo de Figma.
+`ShopRoute`, definido junto al grafo, obtiene el ViewModel de contadores. `ShopContent` dibuja el marco y la barra inferior; cada destino obtiene su propio ViewModel. Las listas se sincronizan mediante los flujos de Room, sin pasar un ViewModel de negocio compartido entre pantallas.
 
-## Carpetas
+Configuración y acceso comparten deliberadamente LoginViewModel porque las preferencias afectan a la sesión actual. SettingsRoute obtiene esa misma instancia mediante su propietario Activity y la fábrica del contenedor.
 
-Raíz Kotlin: `app/src/main/java/com/example/proyectopanaderia/`.
+## Estado de pantalla
 
-```text
-MainActivity.kt                 Punto de entrada Android y splash
-app/                           Composición, Application y contenedor de dependencias
-presentation/
-  login/                       Pantalla, estado y ViewModel de acceso
-  settings/                    Pantalla de configuración
-  components/                  Componentes visuales reutilizables
-  catalog/                     Pantalla de catálogo, búsqueda y filtros
-  shop/                        Contenedor y ViewModel del catálogo autenticado
-ui/theme/                      Colores y tipografía compartidos
-domain/
-  auth/                        Cuenta pública de demostración
-  model/                       Modelos Kotlin sin dependencias de Room ni Compose
-  repository/                  Contratos de preferencias, catálogo, clientes, compras y pedidos
-data/
-  local/
-    preferences/               Implementación de Preferences DataStore
-    database/
-      entity/                  Entidades y claves foráneas
-      dao/                     Consultas y operaciones SQL
-      relation/                Lecturas de agregados con @Relation y @Transaction
-      BakeryDatabase.kt        Base de datos Room, versión 1
-      DatabaseConverters.kt    Conversión del estado de pedido
-  repository/                  Implementaciones, mapeos y transacciones
-```
+Cada ViewModel expone **un solo StateFlow público de solo lectura**, llamado `state`; el MutableStateFlow es privado. Los ViewModels de negocio heredan esta mecánica de `ScreenViewModel<T>`.
 
-`app/schemas/` contiene el esquema exportado de Room, que debe versionarse. `docs/` guarda decisiones, trazabilidad de pantallas y trabajo DCU. Las carpetas de nuevas pantallas se crean cuando contengan código real, evitando paquetes vacíos o pantallas de relleno.
+`ScreenState<T>` tiene tres variantes:
 
-Flujo de dependencia: **pantalla → ViewModel → contrato del repositorio → implementación → DAO → Room**. `AppContainer` conecta esas piezas mediante inyección por constructor. Las pantallas no abren bases de datos; los ViewModels no reciben DAO ni Context. DataStore sigue el mismo esquema mediante `PreferencesRepository`.
+1. `Loading`: lectura inicial o reintento en curso.
+2. `Content(data, busy)`: información disponible; `busy` bloquea otra escritura simultánea en ese ViewModel.
+3. `Error(message)`: fallo de lectura, con botón Reintentar.
+
+Una lista vacía es contenido válido. Un fallo al escribir conserva el contenido y emite un aviso; no convierte una pantalla legible en una pantalla de error de carga. Al fallar la lectura se utiliza Error; no se combinan banderas contradictorias de carga y error.
+
+Login usa `LoginStatus.LOADING/READY/ERROR` dentro de su único LoginState. Las propiedades derivadas `loading/loadError` permiten integrar el splash, sin poder asignar ambas a la vez. El error de credenciales pertenece al formulario y permanece hasta editarlo o reintentar.
+
+## Eventos y restauración
+
+- Los avisos y `OrderCreated(orderId)` salen por un `Channel(BUFFERED)` privado expuesto como Flow mediante `receiveAsFlow()`.
+- `ObserveEvents` tiene un consumidor por productor y utiliza `repeatOnLifecycle(RESUMED)`. El callback actualizado se conserva mediante `rememberUpdatedState`.
+- El coordinador mantiene el SnackbarHost fuera de cada destino, por lo que el aviso de confirmación puede mostrarse al abrir Pedidos.
+- Los eventos consumidos no se reproducen a un nuevo suscriptor. El canal no es almacenamiento persistente ni promete entrega exactamente una vez ante muerte del proceso; los pedidos siguen en Room y la sesión sigue siendo estado, aunque un aviso transitorio se pierda.
+- Catálogo conserva búsqueda y categoría mediante SavedStateHandle. Pedidos conserva filtro y pedido expandido del mismo modo. Las fábricas utilizan `createSavedStateHandle()`.
+- LoginRoute conserva correo y validación local; la contraseña se mantiene únicamente en memoria y no se guarda en un Bundle ni DataStore.
+- NavController conserva el destino y el argumento Long de Ticket. TicketViewModel vuelve a observar el pedido en Room por cliente e ID.
+- La barra inferior guarda/restaura sus pilas. Cerrar sesión elimina el grafo autenticado y las pilas guardadas; un nuevo acceso comienza con filtros nuevos.
+
+## Navegación
+
+`AppDestinations` define acceso, configuración, catálogo, favoritos, carrito, pedidos y `ticket/{orderId}`. No se usa `section`, `settingsOpen` ni `ticketOrder` como mecanismo de navegación.
+
+Atrás desde Ticket vuelve a Pedidos; desde Configuración vuelve al destino anterior. Desde una pestaña secundaria vuelve a Catálogo. El ticket sigue siendo un detalle de Pedidos para la selección de la barra inferior.
 
 ## Tablas
 
@@ -82,21 +86,21 @@ Relaciones: categoría 1:N productos; cliente 1:N pedidos; pedido 1:N detalles; 
 - Crear pedido, copiar los detalles y vaciar el carrito ocurre en una única transacción. Una falla revierte toda la operación.
 - Actualizar cantidades conserva el precio histórico. Para editar un pedido archivado primero se recupera a Guardados. Archivar es reversible y no equivale a eliminar.
 - Repetir añade productos al carrito existente utilizando el catálogo actual. Si algún producto ya no existe, está deshabilitado o supera el límite de cantidad, se revierte la operación completa; no se produce una repetición parcial silenciosa.
-- Catálogo y clientes exponen crear, consultar, editar y eliminar. Pedidos expone crear desde carrito, consultar lista/detalle, modificar cantidades, archivar/recuperar, eliminar y repetir. La conexión de estas acciones a controles visuales queda pendiente.
-- El QR se representará con `panaderia:pedido:v1:<token>`. El token identifica un pedido local, no certifica pagos ni envía datos. El renderizador QR se incorporará al construir esa pantalla.
+- Catálogo y clientes exponen crear, consultar, editar y eliminar. Pedidos expone crear desde carrito, consultar lista/detalle, modificar cantidades, archivar/recuperar, eliminar y repetir. La UI conecta catálogo, favoritos, carrito, creación de pedidos, consulta, archivar/recuperar y ticket; la administración de maestros y editar/eliminar/repetir pedidos siguen pendientes.
+- El QR se representa con `panaderia:pedido:v1:<token>`. El token identifica un pedido local, no certifica pagos ni envía datos. Se genera localmente con ZXing.
 - Las imágenes se referencian por una clave estable local, no por URLs temporales de Figma ni IDs numéricos de recursos persistidos. Las tarjetas utilizan por ahora el símbolo local de panadería; las ilustraciones exactas siguen pendientes por la cuota de Figma.
 - Una sola instancia de Room por proceso, creada de forma diferida por `AppContainer`; operaciones suspendidas y lecturas `Flow`. Sin `allowMainThreadQueries` y sin borrado destructivo al migrar. Un cambio de esquema exige subir la versión y escribir su migración.
 - Tanto DataStore como Room se excluyen de copia a la nube y transferencia automática para mantener esta entrega únicamente en el dispositivo.
 
-## Siguientes pasos del proceso DCU
 
-1. Validar con usuarios las tareas de buscar productos, guardar favoritos, preparar un pedido, recuperar el QR y repetir una compra.
-2. Revisar dónde se ubicarán la administración de maestros y las acciones de editar/eliminar que exige la rúbrica y no aparecen en el prototipo.
-3. Continuar, cuando se autorice la próxima etapa, con maestros; favoritos/carrito; creación/ticket; historial y CRUD. El catálogo ya está conectado.
-4. Evaluar comprensión de “Guardado local”, “Archivado” y “no es comprobante de pago”, además de recuperación ante errores y confirmación de eliminación.
-5. Registrar problemas, cambios y nueva evaluación. Estos pasos están planificados; no se declara que ya se realizaron pruebas con usuarios.
+## Verificación y trazabilidad
 
-## Referencias técnicas
+Consultar [FASES_CORRECCION.md](FASES_CORRECCION.md) para los problemas originales, cambios y evidencias de las fases 1, 2 y 3. Las correcciones no cambian el esquema de Room ni requieren migración o borrado de datos.
 
-- [Room y configuración de su compilador](https://developer.android.com/jetpack/androidx/releases/room).
-- [KSP con las herramientas de Android](https://developer.android.com/build/migrate-to-ksp).
+Las pruebas automatizadas no sustituyen una evaluación DCU con usuarios. Esa evaluación, junto con accesibilidad y formularios de administración, sigue siendo trabajo posterior.
+
+## Referencias
+
+- [Estado de la UI](https://developer.android.com/topic/architecture/ui-layer/state-production).
+- [Eventos de la UI y límites de entrega](https://developer.android.com/topic/architecture/ui-layer/events).
+- [SavedStateHandle](https://developer.android.com/topic/libraries/architecture/viewmodel/viewmodel-savedstate).
