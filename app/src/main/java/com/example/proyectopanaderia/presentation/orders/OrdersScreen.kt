@@ -83,7 +83,10 @@ class OrdersViewModel(
     }
 
     fun setFilter(status: OrderStatus?) {
-        mutableState.update { it.copy(filter = status, loading = true, loadFailed = false) }
+        mutableState.update {
+            if (it.filter == status) it
+            else it.copy(filter = status, loading = true, loadFailed = false)
+        }
     }
 
     /** Archives a saved order or recovers an archived one. The Room flow refreshes the list. */
@@ -127,11 +130,29 @@ fun OrdersScreen(email: String, container: AppContainer, modifier: Modifier = Mo
     )
     val state by model.state.collectAsStateWithLifecycle()
     var expandedId by rememberSaveable { mutableStateOf<Long?>(null) }
-    var ticketOrder by remember { mutableStateOf<Order?>(null) }
-    val selectedTicket = ticketOrder
-    if (selectedTicket != null) {
-        BackHandler { ticketOrder = null }
-        TicketScreen(selectedTicket, onBack = { ticketOrder = null }, modifier = modifier)
+    // Save only the identity; Room remains the source of the restored ticket's data.
+    var ticketOrderId by rememberSaveable(email) { mutableStateOf<Long?>(null) }
+    if (ticketOrderId != null) {
+        BackHandler { ticketOrderId = null }
+        when {
+            state.loading || state.loadFailed -> Column(
+                modifier = modifier.padding(20.dp),
+                verticalArrangement = Arrangement.spacedBy(14.dp),
+            ) {
+                TextButton(onClick = { ticketOrderId = null }) { Text("Volver") }
+                if (state.loading) {
+                    CircularProgressIndicator()
+                } else {
+                    EmptyState("No pudimos abrir el ticket", "Inténtalo de nuevo. Tu pedido sigue guardado.")
+                    Button(onClick = model::load) { Text("Reintentar") }
+                }
+            }
+            else -> TicketScreen(
+                state.orders.firstOrNull { it.id == ticketOrderId },
+                onBack = { ticketOrderId = null },
+                modifier = modifier,
+            )
+        }
         return
     }
 
@@ -190,7 +211,7 @@ fun OrdersScreen(email: String, container: AppContainer, modifier: Modifier = Mo
                     expanded = expandedId == order.id,
                     busy = state.busy,
                     onToggle = { expandedId = if (expandedId == order.id) null else order.id },
-                    onViewTicket = { ticketOrder = order },
+                    onViewTicket = { ticketOrderId = order.id },
                     onSetArchived = model::setArchived,
                 )
             }
