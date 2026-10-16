@@ -6,7 +6,7 @@ La app incluye acceso de demostración, configuración, catálogo, favoritos, ca
 
 `Route → ViewModel → contrato de repositorio → implementación → DAO/Room o DataStore`.
 
-- `app/AppContainer.kt`: una instancia de Room por proceso, repositorios y fábricas de ViewModels con inyección por constructor. No se utiliza Hilt.
+- `di/DataModule.kt`: módulos Hilt que proporcionan una instancia de Room por proceso, DataStore y repositorios. Los ViewModels se gestionan mediante Hilt e inyección por constructor.
 - `app/BakeryApp.kt`: NavHost, control de sesión, selección de pestañas y efectos de navegación/avisos.
 - `presentation/<funcionalidad>/*Route.kt`: obtiene el ViewModel, recoge su estado con `collectAsStateWithLifecycle()` y conecta sus acciones al Content.
 - `presentation/<funcionalidad>/*Screen.kt`: contiene las funciones `*Content`, que reciben estado y callbacks, sin acceder a repositorios ni obtener ViewModels.
@@ -89,7 +89,7 @@ Relaciones: categoría 1:N productos; cliente 1:N pedidos; pedido 1:N detalles; 
 - Catálogo y clientes exponen crear, consultar, editar y eliminar. Pedidos expone crear desde carrito, consultar lista/detalle, modificar cantidades, archivar/recuperar, eliminar y repetir. La UI conecta catálogo, favoritos, carrito, creación de pedidos, consulta, archivar/recuperar y ticket; la administración de maestros y editar/eliminar/repetir pedidos siguen pendientes.
 - El QR se representa con `panaderia:pedido:v1:<token>`. El token identifica un pedido local, no certifica pagos ni envía datos. Se genera localmente con ZXing.
 - Las imágenes se referencian por una clave estable local, no por URLs temporales de Figma ni IDs numéricos de recursos persistidos. Las tarjetas utilizan por ahora el símbolo local de panadería; las ilustraciones exactas siguen pendientes por la cuota de Figma.
-- Una sola instancia de Room por proceso, creada de forma diferida por `AppContainer`; operaciones suspendidas y lecturas `Flow`. Sin `allowMainThreadQueries` y sin borrado destructivo al migrar. Un cambio de esquema exige subir la versión y escribir su migración.
+- Una sola instancia de Room por proceso, proporcionada por Hilt con alcance `@Singleton`; operaciones suspendidas y lecturas `Flow`. Sin `allowMainThreadQueries` y sin borrado destructivo al migrar. Un cambio de esquema exige subir la versión y escribir su migración.
 - Tanto DataStore como Room se excluyen de copia a la nube y transferencia automática para mantener esta entrega únicamente en el dispositivo.
 
 

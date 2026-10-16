@@ -18,7 +18,7 @@ Este documento registra las fases solicitadas y sus comprobaciones. Complementa 
 
 **Corrección:** un NavHost/NavController, siete destinos, grafo autenticado, barra inferior conectada al controlador, argumento Long para ticket y consulta por cliente en Room. Salir limpia el historial autenticado y las pilas guardadas. La limpieza de rutas anidadas se ejecuta solo mientras el grafo SHOP está activo.
 
-**Archivos:** AppDestinations.kt, BakeryApp.kt, ShopScreen.kt, TicketRoute.kt, TicketViewModel.kt, AppContainer.kt y dependencia Navigation Compose.
+**Archivos:** AppDestinations.kt, BakeryApp.kt, ShopScreen.kt, TicketRoute.kt, TicketViewModel.kt, di/DataModule.kt y dependencia Navigation Compose.
 
 **Pruebas:** NavigationFlowTest verifica Configuración antes y después del acceso, pestañas, Atrás, búsqueda conservada, recreación en Carrito/Configuración, filtro conservado y cierre de sesión. Comprueba que un nuevo acceso no recupere filtros de la sesión anterior y que Atrás desde acceso termine la Activity.
 
@@ -28,7 +28,7 @@ Este documento registra las fases solicitadas y sus comprobaciones. Complementa 
 
 **Correcciones:**
 
-- CatalogViewModel, FavoritesViewModel y CartViewModel propios, con fábricas en AppContainer.
+- CatalogViewModel, FavoritesViewModel y CartViewModel propios, gestionados por Hilt.
 - Route obtiene el ViewModel y recoge estado; Content recibe estado y acciones. Acceso, Configuración, Pedidos y Ticket también siguen esa separación. ShopRoute mantiene únicamente el ViewModel de contadores del grafo.
 - OrdersViewModel y OrdersState extraídos a archivos propios.
 - Un StateFlow público de solo lectura por ViewModel; estado mutable privado.
@@ -36,7 +36,7 @@ Este documento registra las fases solicitadas y sus comprobaciones. Complementa 
 - Error de escritura como aviso sin descartar contenido; bloqueo de escrituras repetidas mientras la operación está activa.
 - Avisos y confirmación mediante Channel/Flow; consumo solo en RESUMED. Sesión y datos de pedidos permanecen como estado durable, no dependen de recibir un aviso.
 - SavedStateHandle conserva consulta/categoría y filtro/detalle de Pedidos. La contraseña no se serializa.
-- Se mantiene collectAsStateWithLifecycle y la inyección manual con AppContainer. No se introduce Hilt ni se cambia la base de datos.
+- Se mantiene collectAsStateWithLifecycle. La inyección se migró a Hilt conservando la base de datos.
 
 **Pruebas nuevas:** ViewModelStateTest usa Room en memoria para comprobar carga/error/reintento, error de escritura conservando contenido, aviso que no se repite al volver a suscribirse, sincronización catálogo/favoritos/carrito, restauración de selección y dos confirmaciones simultáneas que generan un solo pedido y un solo evento de navegación.
 

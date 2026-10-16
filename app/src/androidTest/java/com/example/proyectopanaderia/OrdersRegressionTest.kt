@@ -7,7 +7,7 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.room.Room
 import androidx.room.withTransaction
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.example.proyectopanaderia.app.BakeryApplication
+import com.example.proyectopanaderia.data.repository.RoomCustomerRepository
 import com.example.proyectopanaderia.data.local.database.BakeryDatabase
 import com.example.proyectopanaderia.data.local.database.entity.OrderEntity
 import com.example.proyectopanaderia.data.local.database.entity.OrderItemEntity
@@ -25,10 +25,9 @@ class OrdersRegressionTest {
 
     @Test fun repeatedFiltersAndTicketSurviveRecreation() {
         val context = compose.activity.applicationContext
-        val container = (context as BakeryApplication).container
         val database = Room.databaseBuilder(context, BakeryDatabase::class.java, "panaderia.db").build()
         val ids = mutableListOf<Long>()
-        val customerId = runBlocking { container.customers.ensureLocalCustomer(DemoAccount.email) }
+        val customerId = runBlocking { RoomCustomerRepository(database.customerDao()).ensureLocalCustomer(DemoAccount.email) }
         try {
             // Insert only test orders: do not clear the user's cart, catalog or history.
             runBlocking {
