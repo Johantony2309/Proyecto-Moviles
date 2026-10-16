@@ -8,7 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.*
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.compose.*
@@ -26,9 +26,9 @@ import com.example.proyectopanaderia.presentation.orders.OrdersRoute
 import com.example.proyectopanaderia.presentation.ticket.TicketRoute
 
 @Composable
-fun BakeryApp(container: AppContainer) {
+fun BakeryApp() {
     val owner = checkNotNull(LocalViewModelStoreOwner.current)
-    val model: LoginViewModel = viewModel(factory = container.loginFactory)
+    val model: LoginViewModel = hiltViewModel()
     val snackbar = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     val state by model.state.collectAsStateWithLifecycle()
@@ -76,10 +76,10 @@ fun BakeryApp(container: AppContainer) {
     Box(Modifier.fillMaxSize()) {
     NavHost(navController, startDestination = AppDestinations.LOGIN, route = AppDestinations.ROOT) {
         composable(AppDestinations.LOGIN) {
-            if (state.signedInEmail.isBlank()) LoginRoute(container, owner, openSettings)
+            if (state.signedInEmail.isBlank()) LoginRoute(owner, openSettings)
         }
         composable(AppDestinations.SETTINGS) {
-            SettingsRoute(container, owner) { navController.popBackStack() }
+            SettingsRoute(owner) { navController.popBackStack() }
         }
 
         navigation(startDestination = AppDestinations.CATALOG, route = AppDestinations.SHOP) {
@@ -87,7 +87,7 @@ fun BakeryApp(container: AppContainer) {
                 AppDestinations.ORDERS).forEach { route ->
                 composable(route) { destination ->
                     if (state.signedInEmail.isNotBlank()) ShopRoute(
-                        destination, navController, container, state,
+                        destination, navController, state,
                         openSettings, model::signOut, onEvent,
                     )
                 }
@@ -96,7 +96,7 @@ fun BakeryApp(container: AppContainer) {
                 arguments = listOf(navArgument(AppDestinations.ORDER_ID) { type = NavType.LongType }),
             ) { destination ->
                 if (state.signedInEmail.isNotBlank()) ShopRoute(
-                    destination, navController, container, state,
+                    destination, navController, state,
                     openSettings, model::signOut, onEvent,
                 )
             }
@@ -132,26 +132,26 @@ private fun NavHostController.selectTab(destination: String) {
 
 @Composable
 private fun ShopRoute(entry: NavBackStackEntry, navController: NavHostController,
-    container: AppContainer, session: LoginState, settings: () -> Unit,
+    session: LoginState, settings: () -> Unit,
     signOut: () -> Unit, onEvent: (UiEvent) -> Unit) {
     val shopEntry = remember(entry) { navController.getBackStackEntry(AppDestinations.SHOP) }
-    val model: ShopViewModel = viewModel(viewModelStoreOwner = shopEntry,
-        factory = container.shopFactory(session.signedInEmail))
+    val model = hiltViewModel<ShopViewModel, ShopViewModel.Factory>(viewModelStoreOwner = shopEntry,
+        creationCallback = { it.create(session.signedInEmail) })
     val state by model.state.collectAsStateWithLifecycle()
     val destination = entry.destination.route.orEmpty()
     ShopContent(state, model::load, destination, navController::selectTab, settings, signOut,
         session.busy) { modifier ->
         when (destination) {
             AppDestinations.TICKET -> TicketRoute(session.signedInEmail,
-                entry.arguments?.getLong(AppDestinations.ORDER_ID) ?: 0L, container,
+                checkNotNull(entry.arguments).getLong(AppDestinations.ORDER_ID),
                 onBack = { navController.popBackStack() }, modifier = modifier)
-            AppDestinations.ORDERS -> OrdersRoute(session.signedInEmail, container, onEvent,
+            AppDestinations.ORDERS -> OrdersRoute(session.signedInEmail, onEvent,
                 onViewTicket = { orderId ->
                     navController.navigate(AppDestinations.ticket(orderId)) { launchSingleTop = true }
                 }, modifier = modifier)
-            AppDestinations.FAVORITES -> FavoritesRoute(session.signedInEmail, container, onEvent, modifier)
-            AppDestinations.CART -> CartRoute(session.signedInEmail, container, onEvent, modifier)
-            AppDestinations.CATALOG -> CatalogRoute(session.signedInEmail, container, onEvent, modifier)
+            AppDestinations.FAVORITES -> FavoritesRoute(session.signedInEmail, onEvent, modifier)
+            AppDestinations.CART -> CartRoute(session.signedInEmail, onEvent, modifier)
+            AppDestinations.CATALOG -> CatalogRoute(session.signedInEmail, onEvent, modifier)
         }
     }
 }

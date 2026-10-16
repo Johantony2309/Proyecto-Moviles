@@ -3,14 +3,13 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.proyectopanaderia.app.AppContainer
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.proyectopanaderia.presentation.login.LoginViewModel
 import com.example.proyectopanaderia.presentation.components.ScreenSurface
 
 @Composable
-fun LoginRoute(container: AppContainer, owner: ViewModelStoreOwner, openSettings: () -> Unit) {
-    val model: LoginViewModel = viewModel(viewModelStoreOwner = owner, factory = container.loginFactory)
+fun LoginRoute(owner: ViewModelStoreOwner, openSettings: () -> Unit) {
+    val model: LoginViewModel = hiltViewModel(viewModelStoreOwner = owner)
     val state by model.state.collectAsStateWithLifecycle()
     var email by rememberSaveable { mutableStateOf(state.settings.savedEmail) }
     var submitted by rememberSaveable { mutableStateOf(false) }

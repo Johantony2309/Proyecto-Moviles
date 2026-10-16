@@ -4,9 +4,12 @@ import com.example.proyectopanaderia.domain.repository.*
 import com.example.proyectopanaderia.presentation.common.*
 import kotlinx.coroutines.flow.combine
 
-class CatalogViewModel(private val email: String, private val customers: CustomerRepository,
+@dagger.hilt.android.lifecycle.HiltViewModel(assistedFactory = CatalogViewModel.Factory::class)
+class CatalogViewModel @dagger.assisted.AssistedInject constructor(@dagger.assisted.Assisted private val email: String, private val customers: CustomerRepository,
     private val catalog: CatalogRepository, private val shopping: ShoppingRepository,
     private val savedState: SavedStateHandle) : ScreenViewModel<CatalogState>() {
+    @dagger.assisted.AssistedFactory
+    interface Factory { fun create(email: String): CatalogViewModel }
     private var customerId = 0L
     init { load() }
     fun load() = observe {

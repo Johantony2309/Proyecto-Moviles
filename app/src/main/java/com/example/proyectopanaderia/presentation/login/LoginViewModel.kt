@@ -18,7 +18,8 @@ import java.io.IOException
 import com.example.proyectopanaderia.domain.auth.DemoAccount
 import com.example.proyectopanaderia.domain.repository.PreferencesRepository
 
-class LoginViewModel(private val preferences: PreferencesRepository) : ViewModel() {
+@dagger.hilt.android.lifecycle.HiltViewModel
+class LoginViewModel @javax.inject.Inject constructor(private val preferences: PreferencesRepository) : ViewModel() {
     private val mutableState = MutableStateFlow(LoginState())
     val state = mutableState.asStateFlow()
     private val eventChannel = Channel<UiEvent>(Channel.BUFFERED)

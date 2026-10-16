@@ -3,8 +3,11 @@ import com.example.proyectopanaderia.domain.model.Product
 import com.example.proyectopanaderia.domain.repository.*
 import com.example.proyectopanaderia.presentation.common.*
 
-class FavoritesViewModel(private val email: String, private val customers: CustomerRepository,
+@dagger.hilt.android.lifecycle.HiltViewModel(assistedFactory = FavoritesViewModel.Factory::class)
+class FavoritesViewModel @dagger.assisted.AssistedInject constructor(@dagger.assisted.Assisted private val email: String, private val customers: CustomerRepository,
     private val shopping: ShoppingRepository) : ScreenViewModel<List<Product>>() {
+    @dagger.assisted.AssistedFactory
+    interface Factory { fun create(email: String): FavoritesViewModel }
     private var customerId = 0L
     init { load() }
     fun load() = observe {

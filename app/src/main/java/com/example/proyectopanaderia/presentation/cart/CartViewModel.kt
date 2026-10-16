@@ -3,8 +3,11 @@ import com.example.proyectopanaderia.domain.model.CartItem
 import com.example.proyectopanaderia.domain.repository.*
 import com.example.proyectopanaderia.presentation.common.*
 
-class CartViewModel(private val email: String, private val customers: CustomerRepository,
+@dagger.hilt.android.lifecycle.HiltViewModel(assistedFactory = CartViewModel.Factory::class)
+class CartViewModel @dagger.assisted.AssistedInject constructor(@dagger.assisted.Assisted private val email: String, private val customers: CustomerRepository,
     private val shopping: ShoppingRepository, private val orders: OrderRepository) : ScreenViewModel<List<CartItem>>() {
+    @dagger.assisted.AssistedFactory
+    interface Factory { fun create(email: String): CartViewModel }
     private var customerId = 0L
     init { load() }
     fun load() = observe {

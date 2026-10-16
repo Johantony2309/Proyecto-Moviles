@@ -7,8 +7,11 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class OrdersViewModel(private val email: String, private val customers: CustomerRepository,
+@dagger.hilt.android.lifecycle.HiltViewModel(assistedFactory = OrdersViewModel.Factory::class)
+class OrdersViewModel @dagger.assisted.AssistedInject constructor(@dagger.assisted.Assisted private val email: String, private val customers: CustomerRepository,
     private val orders: OrderRepository, private val savedState: SavedStateHandle) : ScreenViewModel<OrdersState>() {
+    @dagger.assisted.AssistedFactory
+    interface Factory { fun create(email: String): OrdersViewModel }
     private var customerId = 0L
     init { load() }
     fun load() = observe {
