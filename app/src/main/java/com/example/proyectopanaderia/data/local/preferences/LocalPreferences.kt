@@ -3,6 +3,7 @@ package com.example.proyectopanaderia.data.local.preferences
 import com.example.proyectopanaderia.domain.model.LocalSettings
 import com.example.proyectopanaderia.domain.repository.PreferencesRepository
 import android.content.Context
+import javax.inject.Inject
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
@@ -15,7 +16,7 @@ import kotlinx.coroutines.flow.map
 val Context.localDataStore by preferencesDataStore(name = "panaderia_local")
 
 /** A single device's preferences. Passwords never belong in this store. */
-class LocalPreferences(private val store: DataStore<Preferences>) : PreferencesRepository {
+class LocalPreferences @Inject constructor(private val store: DataStore<Preferences>) : PreferencesRepository {
     override val settings: Flow<LocalSettings> = store.data.map { preferences ->
         LocalSettings(
             rememberEmail = preferences[RememberEmail] ?: true,

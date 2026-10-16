@@ -7,7 +7,7 @@ import com.example.proyectopanaderia.domain.repository.OrderRepository
 import kotlinx.coroutines.flow.map
 import java.util.UUID
 
-class RoomOrderRepository(private val db: BakeryDatabase) : OrderRepository {
+class RoomOrderRepository @javax.inject.Inject constructor(private val db: BakeryDatabase) : OrderRepository {
     private val dao = db.orderDao()
     override fun orders(customerId: Long, status: OrderStatus?) =
         dao.orders(customerId, status).map { list -> list.map { it.toModel() } }

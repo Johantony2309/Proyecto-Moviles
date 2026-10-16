@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.map
 import androidx.room.withTransaction
 import com.example.proyectopanaderia.data.local.database.BakeryDatabase
 
-class RoomCatalogRepository(private val db: BakeryDatabase) : CatalogRepository {
+class RoomCatalogRepository @javax.inject.Inject constructor(private val db: BakeryDatabase) : CatalogRepository {
     private val dao = db.catalogDao()
     override suspend fun loadExampleCatalog() = db.withTransaction {
         require(dao.productCount() == 0) { "El catálogo ya contiene productos." }

@@ -5,7 +5,7 @@ import com.example.proyectopanaderia.data.local.database.entity.*
 import com.example.proyectopanaderia.domain.repository.ShoppingRepository
 import kotlinx.coroutines.flow.map
 
-class RoomShoppingRepository(private val db: BakeryDatabase) : ShoppingRepository {
+class RoomShoppingRepository @javax.inject.Inject constructor(private val db: BakeryDatabase) : ShoppingRepository {
     private val dao = db.shoppingDao()
     override suspend fun changeQuantity(customerId: Long, productId: Long, delta: Int) = db.withTransaction {
         val current = dao.cartOnce(customerId).firstOrNull { it.item.productId == productId }?.item?.quantity ?: 0

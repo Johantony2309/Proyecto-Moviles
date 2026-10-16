@@ -6,7 +6,7 @@ import com.example.proyectopanaderia.domain.repository.CustomerRepository
 import kotlinx.coroutines.flow.map
 import java.util.Locale
 
-class RoomCustomerRepository(private val dao: CustomerDao) : CustomerRepository {
+class RoomCustomerRepository @javax.inject.Inject constructor(private val dao: CustomerDao) : CustomerRepository {
     override suspend fun ensureLocalCustomer(email: String): Long {
         val normalized = email.trim().lowercase(Locale.ROOT)
         dao.byEmail(normalized)?.let { return it.id }
