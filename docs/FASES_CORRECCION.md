@@ -72,3 +72,47 @@ adb -s $deviceSerial shell am instrument -w -r -e class 'com.example.proyectopan
 ```
 
 En este entorno se invoca la distribución local Gradle 9.5.0 con el JDK disponible y `--offline --max-workers=2`. La instrumentación se ejecuta por ADB directamente para no depender de descargar componentes adicionales del ejecutor Gradle.
+
+## Fase 4 — Flujo completo y persistencia
+
+Se añadió [el guion de demostración offline](DEMOSTRACION_OFFLINE.md) y `OfflineFlowTest`, con fases separadas de preparación, reapertura sin conexión, revisión visual y limpieza. La prueba respalda el carrito previo en un archivo que sobrevive a la detención del proceso y elimina solamente sus registros temporales al finalizar.
+
+Se actualizaron los selectores antiguos de LoginFlowTest y las esperas de arranque/recreación de Compose. Se añadieron identificadores de prueba a las tarjetas de productos, favoritos y pedidos, y una descripción accesible al QR.
+
+La ejecución del 14 de octubre de 2026 obtuvo compilación correcta, 8 pruebas unitarias aprobadas y lint con 0 errores y 23 advertencias. La batería instrumentada general aprobó 14 casos; el caso offline se omitió deliberadamente en esa batería para ejecutarlo por fases. Se detectó que el reposo automático del teléfono interfería con las pruebas visuales. Los registros locales están en `build/phase4/`.
+
+Al retomar el 16 de octubre, la verificación actual de compilación, pruebas unitarias y lint terminó con BUILD SUCCESSFUL: 8 pruebas unitarias aprobadas y lint con 0 errores y 16 advertencias. Esta ejecución de lint utilizó las dependencias locales en modo offline. El teléfono USB siguió conectado, pero permanecía en reposo incluso después del comando de despertar. El intento inicial del recorrido se detuvo antes de acceder a la app; la fase de limpieza restauró el carrito y retiró sus datos temporales correctamente.
+
+### Correcciones encontradas durante la validación
+
+- Encabezado compacto cuando la ventana tiene menos de 480 dp de altura: el logo deja espacio útil para el contenido horizontal. Se utiliza la altura de `LocalWindowInfo`, convertida con la densidad actual.
+- Tamaño del QR limitado por el espacio disponible en Ticket. Sus módulos se dibujan en píxeles enteros y centrados: el dibujo fraccionario producía líneas finas entre módulos y falló la lectura de la captura vertical. Después del ajuste, el lector decodificó el contenido esperado en vertical y horizontal.
+- Las pruebas esperan la transición nativa de orientación y desplazan las listas perezosas hasta el elemento antes de buscar sus acciones. Volver al carrito conserva su posición de desplazamiento; no se presupone que el título siga visible.
+- La prueba de ticket decodifica el QR de una captura real de pantalla y lo compara con `qrPayload` guardado en Room, con espera acotada del fotograma. No se limita a comprobar la existencia del Canvas.
+
+### Verificación final del 16 de octubre de 2026
+
+Dispositivo: Samsung SM-A750G, Android 10, conectado por USB. Se instaló la compilación actual conservando el almacenamiento.
+
+| Comprobación | Resultado |
+| --- | --- |
+| Compilación de app y APK instrumentado | BUILD SUCCESSFUL |
+| Pruebas unitarias | 8 aprobadas, 0 fallos |
+| Lint | 0 errores, 16 advertencias de recursos, etiqueta y versiones de dependencias |
+| Batería instrumentada general | 14 aprobadas, 0 fallos; OfflineFlowTest omitida aquí y ejecutada por fases explícitas |
+| `prepare` | Aprobada: Catálogo → Favoritos → Carrito → Confirmar → Pedidos → Ticket; lectura del QR y nueva unidad pendiente |
+| Detención real | `am force-stop`; `pidof` sin proceso antes de reabrir |
+| Sin conexión | Modo avión activado, Wi-Fi desactivado; `Active default network: none` |
+| `offline` | Aprobada: sesión restaurada, favorito, cantidad del carrito, pedido, total, token y QR conservados |
+| `layout` | Aprobada: teclado visible, búsqueda accesible, texto al 150 %, giro horizontal, búsqueda conservada, confirmar accesible y QR legible |
+| `cleanup` | Aprobada: datos temporales retirados y carrito/preferencia previa restaurados |
+
+El pedido temporal de la ejecución final fue el #21, total $1,50. Se eliminó mediante la limpieza de la prueba; las capturas conservan la evidencia. Los logs completos están en `build/phase4/prepare-final.txt`, `offline-final.txt`, `layout-final.txt`, `cleanup-final.txt`, `network-final.txt` e `instrumentation-final.txt`.
+
+La batería general terminó en 36,231 s e informa `OK (15 tests)`: incluye 14 casos aprobados y el caso offline omitido por su condición explícita. Cubre preferencias, acceso, navegación/Atrás/cierre de sesión, regresiones de Pedidos, Room y estados de ViewModels. Las pruebas de acceso cambian la sesión de demostración. La validación no borró el almacenamiento de la app.
+
+Se verificó la restauración del teléfono: modo avión 0, Wi-Fi 1, datos móviles 1, fuente 1.1, rotación automática 0, orientación de usuario 0 y mantener pantalla encendida al cargar 0. El archivo `phase4-fixture.json` ya no existe tras la limpieza.
+
+Evidencias: [carrito offline](evidencias/fase4/phase4-offline-cart.png), [ticket offline](evidencias/fase4/phase4-offline-ticket.png), [teclado](evidencias/fase4/phase4-keyboard.png), [carrito horizontal](evidencias/fase4/phase4-landscape-cart.png) y [QR horizontal](evidencias/fase4/phase4-landscape-ticket.png).
+
+Alcance: validación en este teléfono con Android 10 y fuente al 150 %. La decodificación desde la captura comprueba la imagen renderizada; no equivale a una prueba con la cámara de otro teléfono. No se generalizan estos resultados a todos los dispositivos ni a una evaluación completa de TalkBack.

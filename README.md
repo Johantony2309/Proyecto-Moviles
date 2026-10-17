@@ -72,3 +72,5 @@ Catálogo, Favoritos y Carrito tienen ViewModels independientes. Pedidos separa 
 Cada ViewModel expone un único StateFlow de solo lectura. Las pantallas de negocio usan `ScreenState.Loading/Content/Error` y los avisos puntuales usan un canal expuesto como Flow. Confirmar un pedido emite `OrderCreated`, que el coordinador de navegación convierte en la apertura de Pedidos. Los datos confirmados permanecen en Room.
 
 `ViewModelStateTest` cubre errores y reintentos, sincronización entre pantallas, restauración de filtros y confirmación duplicada. El registro de fases contiene los resultados de la ejecución en el teléfono USB.
+
+El [guion de demostración offline](docs/DEMOSTRACION_OFFLINE.md) explica cómo comprobar favoritos, carrito y pedidos después de forzar la detención y reabrir sin conexión. `OfflineFlowTest` permite repetir el recorrido por fases y restaurar los datos previos. Los resultados y correcciones se documentan en [FASES_CORRECCION.md](docs/FASES_CORRECCION.md).

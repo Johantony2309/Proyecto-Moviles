@@ -17,15 +17,15 @@ class LoginFlowTest {
 
     @Test fun accessErrorsSettingsAndLogout() {
         compose.waitUntil(10_000) {
-            compose.onAllNodesWithText("Iniciar sesión").fetchSemanticsNodes().isNotEmpty() ||
-                compose.onAllNodesWithText("Mi cuenta").fetchSemanticsNodes().isNotEmpty()
+            compose.onAllNodesWithText("Iniciar sesión").fetchSemanticsNodes(atLeastOneRootRequired = false).isNotEmpty() ||
+                compose.onAllNodesWithContentDescription("Mi cuenta").fetchSemanticsNodes(atLeastOneRootRequired = false).isNotEmpty()
         }
-        if (compose.onAllNodesWithText("Mi cuenta").fetchSemanticsNodes().isNotEmpty()) {
-            compose.onNodeWithText("Mi cuenta").performClick()
+        if (compose.onAllNodesWithContentDescription("Mi cuenta").fetchSemanticsNodes(atLeastOneRootRequired = false).isNotEmpty()) {
+            compose.onNodeWithContentDescription("Mi cuenta").performClick()
             compose.onNodeWithText("Cerrar sesión").performClick()
-            compose.waitUntil(5_000) { compose.onAllNodesWithText("Iniciar sesión").fetchSemanticsNodes().isNotEmpty() }
+            compose.waitUntil(5_000) { compose.onAllNodesWithText("Iniciar sesión").fetchSemanticsNodes(atLeastOneRootRequired = false).isNotEmpty() }
         }
-        compose.onNodeWithText("Panadería", substring = false).performScrollTo()
+        compose.onNodeWithText("Correo electrónico").performScrollTo()
         screenshot("login.png")
         compose.onNodeWithText("Correo electrónico").performTextClearance()
         compose.onNodeWithText("Iniciar sesión").performScrollTo().performClick()
@@ -39,8 +39,8 @@ class LoginFlowTest {
 
         compose.onNodeWithText("Usar datos de demostración").performScrollTo().performClick()
         compose.onNodeWithText("Iniciar sesión").performScrollTo().performClick()
-        compose.waitUntil(10_000) { compose.onAllNodesWithText("Tu próximo antojo.").fetchSemanticsNodes().isNotEmpty() }
-        compose.onNodeWithText("Mi cuenta").performClick()
+        compose.waitUntil(10_000) { compose.onAllNodesWithText("Tu próximo antojo").fetchSemanticsNodes(atLeastOneRootRequired = false).isNotEmpty() }
+        compose.onNodeWithContentDescription("Mi cuenta").performClick()
         compose.onNodeWithText("Configuración", substring = false).performClick()
         compose.onNodeWithText("Mantener mi sesión").performScrollTo()
         val sessionSwitch = compose.onNode(isToggleable() and hasText("Mantener mi sesión"))
@@ -52,12 +52,14 @@ class LoginFlowTest {
         }
         screenshot("settings.png")
         compose.activityRule.scenario.recreate()
+        compose.waitUntil(10_000) { compose.onAllNodesWithText("Mantener mi sesión").fetchSemanticsNodes(atLeastOneRootRequired = false).isNotEmpty() }
         compose.onNode(isToggleable() and hasText("Mantener mi sesión")).assertIsOn()
         compose.onNodeWithText("‹ Volver").performScrollTo().performClick()
-        compose.onNodeWithText("Mi cuenta").performClick()
+        compose.onNodeWithContentDescription("Mi cuenta").performClick()
         compose.onNodeWithText("Cerrar sesión").performClick()
-        compose.waitUntil(5_000) { compose.onAllNodesWithText("Iniciar sesión").fetchSemanticsNodes().isNotEmpty() }
+        compose.waitUntil(5_000) { compose.onAllNodesWithText("Iniciar sesión").fetchSemanticsNodes(atLeastOneRootRequired = false).isNotEmpty() }
         compose.activityRule.scenario.recreate()
+        compose.waitUntil(10_000) { compose.onAllNodesWithText("Iniciar sesión").fetchSemanticsNodes(atLeastOneRootRequired = false).isNotEmpty() }
         compose.onNodeWithText("Iniciar sesión").assertExists()
     }
 

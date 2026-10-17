@@ -10,6 +10,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -38,8 +40,10 @@ fun TicketScreen(order: Order?, onBack: () -> Unit, modifier: Modifier = Modifie
         return
     }
 
+    BoxWithConstraints(modifier) {
+    val qrSize = minOf(220.dp, maxHeight - 80.dp, maxWidth - 80.dp).coerceAtLeast(1.dp)
     LazyColumn(
-        modifier = modifier,
+        modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(20.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
@@ -61,7 +65,7 @@ fun TicketScreen(order: Order?, onBack: () -> Unit, modifier: Modifier = Modifie
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 Box(Modifier.padding(20.dp), contentAlignment = Alignment.Center) {
-                    TicketQrCode(qrMatrix)
+                    TicketQrCode(qrMatrix, Modifier.size(qrSize))
                 }
             }
         }
@@ -82,6 +86,7 @@ fun TicketScreen(order: Order?, onBack: () -> Unit, modifier: Modifier = Modifie
             }
         }
     }
+    }
 }
 
 @Composable
@@ -96,15 +101,20 @@ private fun TicketLine(item: OrderItem) {
 }
 
 @Composable
-private fun TicketQrCode(matrix: BitMatrix) {
-    Canvas(Modifier.size(220.dp)) {
-        val moduleSize = size.minDimension / matrix.width
+private fun TicketQrCode(matrix: BitMatrix, modifier: Modifier) {
+    Canvas(modifier.semantics { contentDescription = "Código QR del pedido" }) {
+        // Whole pixels prevent antialiased seams between adjacent QR modules.
+        val moduleSize = kotlin.math.floor(size.minDimension / matrix.width).coerceAtLeast(1f)
+        val origin = androidx.compose.ui.geometry.Offset(
+            kotlin.math.floor((size.width - moduleSize * matrix.width) / 2),
+            kotlin.math.floor((size.height - moduleSize * matrix.height) / 2),
+        )
         for (y in 0 until matrix.height) {
             for (x in 0 until matrix.width) {
                 if (matrix[x, y]) {
                     drawRect(
                         color = Color.Black,
-                        topLeft = androidx.compose.ui.geometry.Offset(x * moduleSize, y * moduleSize),
+                        topLeft = origin + androidx.compose.ui.geometry.Offset(x * moduleSize, y * moduleSize),
                         size = androidx.compose.ui.geometry.Size(moduleSize, moduleSize),
                     )
                 }

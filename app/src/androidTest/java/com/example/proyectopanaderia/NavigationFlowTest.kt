@@ -68,7 +68,7 @@ class NavigationFlowTest {
 
     private fun awaitText(text: String) {
         try {
-            compose.waitUntil(10_000) { compose.onNodeWithText(text).isDisplayed() }
+            compose.waitUntil(10_000) { exists(text) && compose.onNodeWithText(text).isDisplayed() }
         } catch (error: AssertionError) {
             throw AssertionError("Pantalla esperada: $text\n" + compose.onRoot().printToString(), error)
         }
@@ -86,6 +86,6 @@ class NavigationFlowTest {
         compose.waitUntil(10_000) { exists("Iniciar sesión") }
     }
 
-    private fun accountVisible() = compose.onAllNodesWithContentDescription("Mi cuenta").fetchSemanticsNodes().isNotEmpty()
-    private fun exists(text: String) = compose.onAllNodesWithText(text).fetchSemanticsNodes().isNotEmpty()
+    private fun accountVisible() = compose.onAllNodesWithContentDescription("Mi cuenta").fetchSemanticsNodes(atLeastOneRootRequired = false).isNotEmpty()
+    private fun exists(text: String) = compose.onAllNodesWithText(text).fetchSemanticsNodes(atLeastOneRootRequired = false).isNotEmpty()
 }

@@ -13,6 +13,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.unit.dp
 import com.example.proyectopanaderia.presentation.common.ScreenState
 import com.example.proyectopanaderia.R
@@ -25,16 +27,18 @@ fun ShopContent(state: ScreenState<ShopCounts>, retry: () -> Unit, destination: 
     content: @Composable (Modifier) -> Unit) {
     var menu by remember { mutableStateOf(false) }
     val counts = (state as? ScreenState.Content)?.data
+    val windowHeight = with(LocalDensity.current) { LocalWindowInfo.current.containerSize.height.toDp() }
+    val compactHeight = windowHeight < 480.dp
     Scaffold(
         contentWindowInsets = WindowInsets.safeDrawing,
         topBar = {
             CenterAlignedTopAppBar(
-                modifier = Modifier.height(148.dp),
+                modifier = Modifier.height(if (compactHeight) 80.dp else 148.dp),
                 title = {
                     Image(
                         painter = painterResource(R.drawable.ic_bakery),
                         contentDescription = "Panadería",
-                        modifier = Modifier.size(120.dp),
+                        modifier = Modifier.size(if (compactHeight) 48.dp else 120.dp),
                     )
                 }, actions = {
                 Box {

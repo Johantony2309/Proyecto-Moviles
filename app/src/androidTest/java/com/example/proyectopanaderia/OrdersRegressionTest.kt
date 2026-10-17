@@ -47,7 +47,7 @@ class OrdersRegressionTest {
             }
             compose.waitUntil(10_000) {
                 exists("Iniciar sesión") || compose.onAllNodesWithContentDescription("Mi cuenta")
-                    .fetchSemanticsNodes().isNotEmpty()
+                    .fetchSemanticsNodes(atLeastOneRootRequired = false).isNotEmpty()
             }
             if (exists("Iniciar sesión")) {
                 compose.onNodeWithText("Usar datos de demostración").performScrollTo().performClick()
@@ -102,5 +102,5 @@ class OrdersRegressionTest {
         }
     }
 
-    private fun exists(text: String) = compose.onAllNodesWithText(text).fetchSemanticsNodes().isNotEmpty()
+    private fun exists(text: String) = compose.onAllNodesWithText(text).fetchSemanticsNodes(atLeastOneRootRequired = false).isNotEmpty()
 }
