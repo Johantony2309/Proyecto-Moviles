@@ -115,8 +115,20 @@ Se verificó la restauración del teléfono: modo avión 0, Wi-Fi 1, datos móvi
 
 Evidencias: [carrito offline](evidencias/fase4/phase4-offline-cart.png), [ticket offline](evidencias/fase4/phase4-offline-ticket.png), [teclado](evidencias/fase4/phase4-keyboard.png), [carrito horizontal](evidencias/fase4/phase4-landscape-cart.png) y [QR horizontal](evidencias/fase4/phase4-landscape-ticket.png).
 
+Estas capturas son históricas de fase 4. Contienen colores, cabecera y mensajes anteriores; no acreditan las correcciones posteriores de fase 5 ni el aviso local actual del ticket.
+
 Alcance: validación en este teléfono con Android 10 y fuente al 150 %. La decodificación desde la captura comprueba la imagen renderizada; no equivale a una prueba con la cámara de otro teléfono. No se generalizan estos resultados a todos los dispositivos ni a una evaluación completa de TalkBack.
 
 ## Fase 5 — Pulido de la interfaz actual
 
 Consultar [FASE_5_INTERFAZ.md](FASE_5_INTERFAZ.md) para los cambios de cabecera, contraste, nombre accesible y alcance local del ticket, junto con el estado de la comparación con el prototipo. Las imágenes por producto ya están implementadas.
+
+**Estado real:** correcciones implementadas y verificadas localmente; validación manual, nuevas capturas y comparación con Figma **PENDIENTES**.
+
+- `8d74664` (Roberto): cabecera/logo adaptativos, naranja oscuro, nombre accesible y avisos de pedido local en Carrito y Ticket.
+- `c89bfce`: documentación de arquitectura actualizada para Hilt, SavedStateHandle y parámetros asistidos de sesión/pedido.
+- `6dbb9ba`: ajuste de altura interna de TopAppBar conservando la adaptación; tarjetas de carrito/favoritos según ancho y escala de texto; salto de línea en filtros y encabezados de pedidos; botones de cantidad accesibles de al menos 48 dp y eliminación de etiquetas duplicadas en iconos de pestañas.
+
+Verificación local del 17 de octubre de 2026 del código incluido en `6dbb9ba`: `:app:assembleDebug` correcto; `:app:testDebugUnitTest` con **8 aprobadas y 0 fallos**; `:app:lintDebug` con **0 errores y 24 advertencias**; `git diff --check` sin errores. Las tareas Gradle se ejecutaron por separado después de una interrupción por tiempo límite de Shell. Estos resultados son posteriores a los 16 avisos de lint registrados para fase 4; no reemplazan ni alteran aquel registro histórico.
+
+No se ejecutaron pruebas visuales, TalkBack ni instrumentación en dispositivo para estas últimas correcciones. Quedan **PENDIENTES** las comprobaciones manuales de pantallas pequeñas/horizontales, teclado, texto grande, contraste visual, lectura del aviso local y comparación con Figma. Las cinco capturas de fase 4 no se reutilizan como evidencia de esos cambios. El inventario y los límites de las evidencias se detallan en [FASE_5_INTERFAZ.md](FASE_5_INTERFAZ.md); no se han generado capturas nuevas ni el informe Word en esta fase documental.

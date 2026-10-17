@@ -2,7 +2,12 @@
 
 Aplicación Android nativa en Kotlin y Jetpack Compose. Interfaces disponibles: acceso de demostración, splash, configuración local, catálogo, favoritos, carrito y pedidos. El catálogo permite buscar, filtrar por categoría, guardar favoritos y añadir productos al carrito mediante Room y MVVM. Favoritos permite consultar los productos guardados, quitarlos o añadirlos al carrito. Carrito permite modificar cantidades, quitar productos, consultar subtotal y total, y confirmar el pedido: la operación reutiliza `createFromCart()`, guarda el pedido con sus productos y cantidades, y vacía el carrito en una sola transacción. Pedidos permite consultar el historial con filtros Todos/Guardados/Archivados, fecha, total, estado y detalle de productos. Ticket consulta el pedido en Room por su identificador y genera un QR local escaneable. La administración de maestros queda aplazada por decisión de alcance; el CRUD visual completo sigue pendiente. No hay registro ni servidor.
 
-Consulta [la arquitectura y organización del estado](docs/ARQUITECTURA.md) y [el registro de correcciones de las fases 1, 2 y 3](docs/FASES_CORRECCION.md).
+## Documentación
+
+- [Arquitectura Hilt, capas, estado y parámetros de navegación](docs/ARQUITECTURA.md).
+- [Interfaz, accesibilidad, imágenes, logo y barra inferior](docs/FASE_5_INTERFAZ.md).
+- [Guion de demostración offline y persistencia](docs/DEMOSTRACION_OFFLINE.md).
+- [Registro de correcciones, verificaciones y evidencias por fase](docs/FASES_CORRECCION.md).
 
 ## Probar el acceso
 
@@ -38,6 +43,9 @@ Esta entrega aplica criterios de DCU, pendientes de validación con usuarios rea
 - Acceso directo al catálogo, estados de carga, resultados vacíos y recuperación ante errores.
 - Sesión persistente voluntaria; explicación de cada opción y desactivación reversible.
 - Fondo crema, logo de Pastelería Andony e imágenes locales por producto implementados. Los controles usan naranja oscuro para mejorar el contraste con blanco. La fidelidad completa al prototipo sigue pendiente de comparación visual con la referencia original.
+- Cabecera y logo adaptativos según altura de ventana; tarjetas de carrito/favoritos ajustadas al ancho y escala de texto, filtros de pedidos con salto de línea y botones de cantidad con descripciones accesibles. El carrito y el ticket aclaran que el pedido se guarda en el dispositivo y no se envía al negocio.
+
+**PENDIENTE en la interfaz actual:** validación manual con TalkBack, pantallas pequeñas/horizontales, teclado, texto grande y contraste visual, además de la comparación con Figma. Las capturas de fase 4 son históricas y no acreditan las mejoras posteriores.
 
 ### Próxima evaluación con usuarios
 
@@ -52,6 +60,8 @@ Abrir esta carpeta en Android Studio, sincronizar Gradle y ejecutar el módulo `
 # Con un emulador o dispositivo conectado:
 .\gradlew.bat :app:connectedDebugAndroidTest
 ```
+
+Verificación local de las correcciones de interfaz de `6dbb9ba` (17 de octubre de 2026): `:app:assembleDebug` correcto, `:app:testDebugUnitTest` con **8 pruebas aprobadas y 0 fallos**, y `:app:lintDebug` con **0 errores y 24 advertencias**. Las tareas se ejecutaron por separado. Estos resultados no equivalen a pruebas visuales, TalkBack o instrumentación en dispositivo de esta versión; consultar el [estado de la fase 5](docs/FASE_5_INTERFAZ.md#validación).
 
 Las pruebas unitarias de `MoneyTest` verifican importes exactos y entradas inválidas; `OrderModelTest` verifica las reglas del modelo de pedidos. `RoomWorkflowTest` contiene pruebas instrumentadas de transacciones y datos de ejemplo, que utilizan una base aislada en un dispositivo.
 
