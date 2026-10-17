@@ -5,7 +5,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
@@ -37,7 +36,8 @@ fun OrdersContent(uiState: ScreenState<OrdersState>, retry: () -> Unit,
                 }
             }
             item {
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     FilterChip(selected = state.filter == null, onClick = { setFilter(null) },
                         enabled = !busy, label = { Text("Todos") })
                     FilterChip(selected = state.filter == OrderStatus.SAVED, onClick = { setFilter(OrderStatus.SAVED) },
@@ -81,10 +81,10 @@ private fun OrderCard(
     Card(modifier = Modifier.testTag("order-${order.id}"),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
         Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Row(
+            FlowRow(
                 Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
+                verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
                 Text("Pedido #${order.id}", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
                 OrderStatusBadge(order.status)

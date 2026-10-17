@@ -7,6 +7,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import com.example.proyectopanaderia.presentation.common.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -45,25 +46,29 @@ fun FavoritesContent(state: ScreenState<List<Product>>, retry: () -> Unit,
                 items(favorites, key = { it.id }) { product ->
                     Card(modifier = Modifier.testTag("favorite-${product.id}"),
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth().padding(12.dp),
-                            horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        ) {
-                            ProductPicture(product.imageKey, Modifier.size(88.dp))
-                            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                                Text(product.name, fontWeight = FontWeight.Bold)
-                                Text(Money.format(product.priceCents), color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
-                                if (!product.available) Text("No disponible", style = MaterialTheme.typography.bodySmall)
-                                Button(
-                                    onClick = { addToCart(product.id) },
-                                    enabled = !busy && product.available,
-                                    modifier = Modifier.fillMaxWidth(),
-                                ) { Text("Añadir al carrito") }
-                                TextButton(
-                                    onClick = { removeFavorite(product.id) },
-                                    enabled = !busy,
-                                    modifier = Modifier.fillMaxWidth(),
-                                ) { Text("Quitar de favoritos") }
+                        BoxWithConstraints {
+                            FlowRow(
+                                modifier = Modifier.fillMaxWidth().padding(12.dp),
+                                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                verticalArrangement = Arrangement.spacedBy(12.dp),
+                                maxItemsInEachRow = if (maxWidth < 300.dp * LocalDensity.current.fontScale) 1 else 2,
+                            ) {
+                                ProductPicture(product.imageKey, Modifier.size(88.dp))
+                                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                    Text(product.name, fontWeight = FontWeight.Bold)
+                                    Text(Money.format(product.priceCents), color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
+                                    if (!product.available) Text("No disponible", style = MaterialTheme.typography.bodySmall)
+                                    Button(
+                                        onClick = { addToCart(product.id) },
+                                        enabled = !busy && product.available,
+                                        modifier = Modifier.fillMaxWidth(),
+                                    ) { Text("Añadir al carrito") }
+                                    TextButton(
+                                        onClick = { removeFavorite(product.id) },
+                                        enabled = !busy,
+                                        modifier = Modifier.fillMaxWidth(),
+                                    ) { Text("Quitar de favoritos") }
+                                }
                             }
                         }
                     }

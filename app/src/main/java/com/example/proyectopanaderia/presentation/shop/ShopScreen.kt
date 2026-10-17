@@ -36,7 +36,7 @@ fun ShopContent(state: ScreenState<ShopCounts>, retry: () -> Unit, destination: 
         contentWindowInsets = WindowInsets.safeDrawing,
         topBar = {
             CenterAlignedTopAppBar(
-                modifier = Modifier.height(headerHeight),
+                expandedHeight = headerHeight,
                 title = {
                     Image(
                         painter = painterResource(R.drawable.ic_bakery),
@@ -61,7 +61,7 @@ fun ShopContent(state: ScreenState<ShopCounts>, retry: () -> Unit, destination: 
                     selected = destination == AppDestinations.CATALOG,
                     onClick = { navigate(AppDestinations.CATALOG) },
                     enabled = !sessionBusy,
-                    icon = { Icon(Icons.Filled.Home, contentDescription = "Catálogo") },
+                    icon = { Icon(Icons.Filled.Home, contentDescription = null) },
                     label = { Text("Catálogo") },
                 )
                 NavigationBarItem(
@@ -72,7 +72,7 @@ fun ShopContent(state: ScreenState<ShopCounts>, retry: () -> Unit, destination: 
                         BadgedBox(badge = {
                             val count = counts?.favorites ?: 0
                             if (count > 0) Badge { Text(count.toString()) }
-                        }) { Icon(Icons.Filled.Favorite, contentDescription = "Favoritos") }
+                        }) { Icon(Icons.Filled.Favorite, contentDescription = null) }
                     },
                     label = { Text("Favoritos") },
                 )
@@ -84,7 +84,7 @@ fun ShopContent(state: ScreenState<ShopCounts>, retry: () -> Unit, destination: 
                         BadgedBox(badge = {
                             val count = counts?.cart ?: 0
                             if (count > 0) Badge { Text(count.toString()) }
-                        }) { Icon(Icons.Filled.ShoppingCart, contentDescription = "Carrito") }
+                        }) { Icon(Icons.Filled.ShoppingCart, contentDescription = null) }
                     },
                     label = { Text("Carrito") },
                 )
@@ -92,7 +92,7 @@ fun ShopContent(state: ScreenState<ShopCounts>, retry: () -> Unit, destination: 
                     selected = destination == AppDestinations.ORDERS || destination == AppDestinations.TICKET,
                     onClick = { navigate(AppDestinations.ORDERS) },
                     enabled = !sessionBusy,
-                    icon = { Icon(Icons.AutoMirrored.Filled.List, contentDescription = "Pedidos") },
+                    icon = { Icon(Icons.AutoMirrored.Filled.List, contentDescription = null) },
                     label = { Text("Pedidos") },
                 )
             }

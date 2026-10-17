@@ -6,8 +6,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import com.example.proyectopanaderia.presentation.common.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -45,31 +47,42 @@ fun CartContent(state: ScreenState<List<CartItem>>, retry: () -> Unit,
             } else {
                 items(cart, key = { it.product.id }) { item ->
                     Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth().padding(12.dp),
-                            horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        ) {
-                            ProductPicture(item.product.imageKey, Modifier.size(80.dp))
-                            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                                Text(item.product.name, fontWeight = FontWeight.Bold)
-                                Text(Money.format(item.product.priceCents), color = MaterialTheme.colorScheme.primary)
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    TextButton(
-                                        onClick = { setQuantity(item.product.id, item.quantity - 1) },
-                                        enabled = !busy,
-                                    ) { Text("−") }
+                        BoxWithConstraints {
+                            FlowRow(
+                                modifier = Modifier.fillMaxWidth().padding(12.dp),
+                                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                verticalArrangement = Arrangement.spacedBy(12.dp),
+                                maxItemsInEachRow = if (maxWidth < 300.dp * LocalDensity.current.fontScale) 1 else 2,
+                            ) {
+                                ProductPicture(item.product.imageKey, Modifier.size(80.dp))
+                                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                    Text(item.product.name, fontWeight = FontWeight.Bold)
+                                    Text(Money.format(item.product.priceCents), color = MaterialTheme.colorScheme.primary)
                                     Text("Cantidad: ${item.quantity}", fontWeight = FontWeight.Bold)
+                                    FlowRow(horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                        verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                        TextButton(
+                                            onClick = { setQuantity(item.product.id, item.quantity - 1) },
+                                            enabled = !busy,
+                                            modifier = Modifier.sizeIn(minWidth = 48.dp, minHeight = 48.dp).semantics {
+                                                contentDescription = "Reducir cantidad de ${item.product.name}"
+                                            },
+                                        ) { Text("−") }
+                                        TextButton(
+                                            onClick = { addOne(item.product.id) },
+                                            enabled = !busy,
+                                            modifier = Modifier.sizeIn(minWidth = 48.dp, minHeight = 48.dp).semantics {
+                                                contentDescription = "Aumentar cantidad de ${item.product.name}"
+                                            },
+                                        ) { Text("+") }
+                                    }
+                                    Text("Subtotal: ${Money.format(item.totalCents)}", style = MaterialTheme.typography.bodySmall)
                                     TextButton(
-                                        onClick = { addOne(item.product.id) },
+                                        onClick = { setQuantity(item.product.id, 0) },
                                         enabled = !busy,
-                                    ) { Text("+") }
+                                        modifier = Modifier.fillMaxWidth(),
+                                    ) { Text("Quitar del carrito") }
                                 }
-                                Text("Subtotal: ${Money.format(item.totalCents)}", style = MaterialTheme.typography.bodySmall)
-                                TextButton(
-                                    onClick = { setQuantity(item.product.id, 0) },
-                                    enabled = !busy,
-                                    modifier = Modifier.fillMaxWidth(),
-                                ) { Text("Quitar del carrito") }
                             }
                         }
                     }
