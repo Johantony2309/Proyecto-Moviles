@@ -1,4 +1,4 @@
-# Arquitectura y estado de Panadería
+# Arquitectura y estado de Pastelería Andony
 
 La app incluye acceso de demostración, configuración, catálogo, favoritos, carrito, pedidos y ticket QR. Funciona localmente con Room y Preferences DataStore. La administración visual completa de maestros y otras acciones CRUD quedan fuera de estas correcciones.
 
@@ -88,7 +88,7 @@ Relaciones: categoría 1:N productos; cliente 1:N pedidos; pedido 1:N detalles; 
 - Repetir añade productos al carrito existente utilizando el catálogo actual. Si algún producto ya no existe, está deshabilitado o supera el límite de cantidad, se revierte la operación completa; no se produce una repetición parcial silenciosa.
 - Catálogo y clientes exponen crear, consultar, editar y eliminar. Pedidos expone crear desde carrito, consultar lista/detalle, modificar cantidades, archivar/recuperar, eliminar y repetir. La UI conecta catálogo, favoritos, carrito, creación de pedidos, consulta, archivar/recuperar y ticket; la administración de maestros y editar/eliminar/repetir pedidos siguen pendientes.
 - El QR se representa con `panaderia:pedido:v1:<token>`. El token identifica un pedido local, no certifica pagos ni envía datos. Se genera localmente con ZXing.
-- Las imágenes se referencian por una clave estable local, no por URLs temporales de Figma ni IDs numéricos de recursos persistidos. Las tarjetas utilizan por ahora el símbolo local de panadería; las ilustraciones exactas siguen pendientes por la cuota de Figma.
+- Las imágenes se referencian por una clave estable local, no por URLs temporales de Figma ni IDs numéricos de recursos persistidos. `ProductPicture` muestra las imágenes locales de croissant, cake, bread y roll; el logo se utiliza únicamente como alternativa cuando la clave no tiene imagen conocida. Las imágenes por producto están implementadas. La equivalencia visual con el prototipo requiere una comparación aparte.
 - Una sola instancia de Room por proceso, proporcionada por Hilt con alcance `@Singleton`; operaciones suspendidas y lecturas `Flow`. Sin `allowMainThreadQueries` y sin borrado destructivo al migrar. Un cambio de esquema exige subir la versión y escribir su migración.
 - Tanto DataStore como Room se excluyen de copia a la nube y transferencia automática para mantener esta entrega únicamente en el dispositivo.
 

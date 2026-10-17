@@ -1,3 +1,4 @@
 <resources>
-    <string name="app_name">Panadería</string>
+    <string name="app_name">Pastelería Andony</string>
+    <string name="local_order_notice">Pedido guardado solo en este dispositivo. No se envía al negocio ni confirma una compra o reserva.</string>
 </resources>

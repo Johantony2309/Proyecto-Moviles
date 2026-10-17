@@ -6,7 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
 private val LightColorScheme = lightColorScheme(
-    primary = Color(0xFFFC4C01),
+    primary = Color(0xFFB93600),
     onPrimary = Color.White,
     primaryContainer = Color(0xFFF3E5CD),
     onPrimaryContainer = Color(0xFF513B29),

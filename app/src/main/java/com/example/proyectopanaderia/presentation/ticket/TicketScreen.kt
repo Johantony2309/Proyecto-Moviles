@@ -10,6 +10,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.example.proyectopanaderia.R
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.graphics.Color
@@ -52,11 +54,14 @@ fun TicketScreen(order: Order?, onBack: () -> Unit, modifier: Modifier = Modifie
         }
         item {
             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
-                Text("Pastelería Andony", fontFamily = FontFamily.Serif, fontWeight = FontWeight.Bold,
+                Text(stringResource(R.string.app_name), fontFamily = FontFamily.Serif, fontWeight = FontWeight.Bold,
                     style = MaterialTheme.typography.headlineSmall)
                 Text("Ticket de pedido #${validOrder.id}", style = MaterialTheme.typography.titleMedium)
                 Text(formatDate(validOrder.createdAt), style = MaterialTheme.typography.bodySmall)
             }
+        }
+        item {
+            Text(stringResource(R.string.local_order_notice), style = MaterialTheme.typography.bodyMedium)
         }
         item {
             Surface(
@@ -70,7 +75,7 @@ fun TicketScreen(order: Order?, onBack: () -> Unit, modifier: Modifier = Modifie
             }
         }
         item {
-            Text("Presenta este código al retirar tu pedido.", style = MaterialTheme.typography.bodyMedium)
+            Text("Este código identifica el pedido guardado en esta aplicación.", style = MaterialTheme.typography.bodyMedium)
         }
         item {
             Text("Detalle", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)

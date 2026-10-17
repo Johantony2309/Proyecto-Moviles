@@ -116,3 +116,7 @@ Se verificó la restauración del teléfono: modo avión 0, Wi-Fi 1, datos móvi
 Evidencias: [carrito offline](evidencias/fase4/phase4-offline-cart.png), [ticket offline](evidencias/fase4/phase4-offline-ticket.png), [teclado](evidencias/fase4/phase4-keyboard.png), [carrito horizontal](evidencias/fase4/phase4-landscape-cart.png) y [QR horizontal](evidencias/fase4/phase4-landscape-ticket.png).
 
 Alcance: validación en este teléfono con Android 10 y fuente al 150 %. La decodificación desde la captura comprueba la imagen renderizada; no equivale a una prueba con la cámara de otro teléfono. No se generalizan estos resultados a todos los dispositivos ni a una evaluación completa de TalkBack.
+
+## Fase 5 — Pulido de la interfaz actual
+
+Consultar [FASE_5_INTERFAZ.md](FASE_5_INTERFAZ.md) para los cambios de cabecera, contraste, nombre accesible y alcance local del ticket, junto con el estado de la comparación con el prototipo. Las imágenes por producto ya están implementadas.

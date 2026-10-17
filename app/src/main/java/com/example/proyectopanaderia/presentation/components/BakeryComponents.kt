@@ -19,6 +19,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
@@ -63,7 +64,8 @@ internal fun BrandHeader() {
         verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         Image(painterResource(R.drawable.ic_bakery), contentDescription = null, modifier = Modifier.size(72.dp))
-        Text("Panadería", fontFamily = FontFamily.Serif, fontSize = 28.sp, fontWeight = FontWeight.Bold)
+        Text(stringResource(R.string.app_name), fontFamily = FontFamily.Serif, fontSize = 28.sp,
+            fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
         Text("HECHO CON CALMA, PARA TI", style = MaterialTheme.typography.labelSmall, letterSpacing = 1.5.sp,
             color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center)
     }

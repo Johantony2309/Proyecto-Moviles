@@ -79,7 +79,7 @@ fun CartContent(state: ScreenState<List<CartItem>>, retry: () -> Unit,
                         Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                             Text("Resumen", fontWeight = FontWeight.Bold)
                             Text("Subtotal: ${Money.format(subtotalCents)}")
-                            Text("Retiro en Pastelería Andony: sin costo")
+                            Text("Pedido local de demostración")
                             Text("Total: ${Money.format(subtotalCents)}", fontWeight = FontWeight.Bold)
                             if (busy) LinearProgressIndicator(Modifier.fillMaxWidth())
                             Button(
@@ -87,7 +87,7 @@ fun CartContent(state: ScreenState<List<CartItem>>, retry: () -> Unit,
                                 enabled = !busy && cart.isNotEmpty(),
                                 modifier = Modifier.fillMaxWidth().padding(top = 6.dp),
                             ) { Text(if (busy) "Confirmando pedido…" else "Confirmar pedido") }
-                            Text("Al confirmar guardamos tu pedido con sus productos, cantidades y total.",
+                            Text("Al confirmar guardamos el pedido en este dispositivo. No se envía al negocio.",
                                 style = MaterialTheme.typography.bodySmall)
                         }
                     }

@@ -1,4 +1,4 @@
-# Panadería · aplicación Android local
+# Pastelería Andony · aplicación Android local
 
 Aplicación Android nativa en Kotlin y Jetpack Compose. Interfaces disponibles: acceso de demostración, splash, configuración local, catálogo, favoritos, carrito y pedidos. El catálogo permite buscar, filtrar por categoría, guardar favoritos y añadir productos al carrito mediante Room y MVVM. Favoritos permite consultar los productos guardados, quitarlos o añadirlos al carrito. Carrito permite modificar cantidades, quitar productos, consultar subtotal y total, y confirmar el pedido: la operación reutiliza `createFromCart()`, guarda el pedido con sus productos y cantidades, y vacía el carrito en una sola transacción. Pedidos permite consultar el historial con filtros Todos/Guardados/Archivados, fecha, total, estado y detalle de productos. Ticket consulta el pedido en Room por su identificador y genera un QR local escaneable. La administración de maestros queda aplazada por decisión de alcance; el CRUD visual completo sigue pendiente. No hay registro ni servidor.
 
@@ -13,7 +13,7 @@ Consulta [la arquitectura y organización del estado](docs/ARQUITECTURA.md) y [e
 
 ## Explorar el catálogo
 
-Después de acceder, pulsa **Cargar catálogo de ejemplo** si no hay productos. Esta acción explícita carga los cuatro productos de referencia y sus categorías sin sustituir un catálogo existente. Buscar y filtrar no modifica los datos. Los corazones y Añadir persisten localmente. El menú inferior abre **Favoritos**, **Carrito** y **Pedidos**; desde carrito se ajustan cantidades, se quitan productos y se muestra el total con retiro sin costo. En carrito, **Confirmar pedido** guarda el pedido con sus productos, cantidades y total, vacía el carrito y abre **Pedidos** para consultarlo. La confirmación se bloquea mientras está en curso y valida que el carrito no esté vacío. Room conserva favoritos y carrito al volver a abrir la aplicación. **Mi cuenta** permite abrir Configuración o cerrar sesión. El perfil local se crea una sola vez por correo.
+Después de acceder, pulsa **Cargar catálogo de ejemplo** si no hay productos. Esta acción explícita carga los cuatro productos de referencia y sus categorías sin sustituir un catálogo existente. Buscar y filtrar no modifica los datos. Los corazones y Añadir persisten localmente. El menú inferior abre **Favoritos**, **Carrito** y **Pedidos**; desde carrito se ajustan cantidades, se quitan productos y se muestra el total del pedido local de demostración. En carrito, **Confirmar pedido** guarda el pedido con sus productos, cantidades y total, vacía el carrito y abre **Pedidos** para consultarlo. La confirmación se bloquea mientras está en curso y valida que el carrito no esté vacío. Room conserva favoritos y carrito al volver a abrir la aplicación. **Mi cuenta** permite abrir Configuración o cerrar sesión. El perfil local se crea una sola vez por correo.
 
 ## Persistencia local
 
@@ -37,7 +37,7 @@ Esta entrega aplica criterios de DCU, pendientes de validación con usuarios rea
 - Contraseña ocultable, teclado de correo y acciones Siguiente/Listo.
 - Acceso directo al catálogo, estados de carga, resultados vacíos y recuperación ante errores.
 - Sesión persistente voluntaria; explicación de cada opción y desactivación reversible.
-- Estilo crema y terracota autorizado como aproximación al prototipo. El símbolo de panadería es provisional; la fidelidad exacta a Figma queda pendiente por el límite del conector.
+- Fondo crema, logo de Pastelería Andony e imágenes locales por producto implementados. Los controles usan naranja oscuro para mejorar el contraste con blanco. La fidelidad completa al prototipo sigue pendiente de comparación visual con la referencia original.
 
 ### Próxima evaluación con usuarios
 

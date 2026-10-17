@@ -10,7 +10,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.test.espresso.Espresso
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import com.example.proyectopanaderia.app.BakeryApplication
+import dagger.hilt.EntryPoints
 import com.example.proyectopanaderia.domain.auth.DemoAccount
 import com.example.proyectopanaderia.domain.model.*
 import kotlinx.coroutines.flow.first
@@ -33,7 +33,7 @@ import java.io.File
 @RunWith(AndroidJUnit4::class)
 class OfflineFlowTest {
     @get:Rule val compose = createAndroidComposeRule<MainActivity>()
-    private val container get() = (compose.activity.application as BakeryApplication).container
+    private val container get() = EntryPoints.get(compose.activity.application, OfflineTestRepositories::class.java)
     private val journal get() = File(compose.activity.filesDir, "phase4-fixture.json")
 
     @Test fun fullFlowAndOfflinePersistence() {
@@ -208,6 +208,9 @@ class OfflineFlowTest {
         compose.onNode(hasScrollToIndexAction()).performScrollToNode(hasTestTag("order-$id"))
         compose.onNode(hasText("Ver ticket QR") and hasAnyAncestor(hasTestTag("order-$id"))).performScrollTo().performClick()
         compose.waitUntil(10_000) { exists("Ticket de pedido #$id") }
+        val localNotice = compose.activity.getString(R.string.local_order_notice)
+        compose.onNode(hasScrollToIndexAction()).performScrollToNode(hasText(localNotice))
+        compose.onNodeWithText(localNotice).performScrollTo().assertIsDisplayed()
         compose.onNode(hasScrollToIndexAction()).performScrollToNode(hasContentDescription("Código QR del pedido"))
         compose.onNodeWithContentDescription("Código QR del pedido").performScrollTo().assertIsDisplayed()
         val expected = runBlocking {
