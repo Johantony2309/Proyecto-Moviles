@@ -4,6 +4,7 @@ Aplicación Android nativa en Kotlin y Jetpack Compose. Interfaces disponibles: 
 
 ## Documentación
 
+- [Casos de uso: reglas de dominio y conservación de transacciones Room](docs/CASOS_DE_USO.md).
 - [Arquitectura Hilt, capas, estado y parámetros de navegación](docs/ARQUITECTURA.md).
 - [Interfaz, accesibilidad, imágenes, logo y barra inferior](docs/FASE_5_INTERFAZ.md).
 - [Guion de demostración offline y persistencia](docs/DEMOSTRACION_OFFLINE.md).

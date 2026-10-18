@@ -31,6 +31,31 @@ class RoomWorkflowTest {
     }
     @After fun close() { db.close() }
 
+    @Test fun rejectedCheckoutPreservesCartAndCreatesNoOrder() = runBlocking {
+        val customer = customers.ensureLocalCustomer("demo@panaderia.com")
+        val category = catalog.saveCategory(Category(name = "Panes"))
+        val product = Product(categoryId = category, name = "Pan", description = "", priceCents = 100)
+        val productId = catalog.saveProduct(product)
+        shopping.setQuantity(customer, productId, 2)
+        catalog.saveProduct(product.copy(id = productId, available = false))
+        try { orders.createFromCart(customer); fail("Must reject unavailable product") }
+        catch (_: IllegalArgumentException) { }
+        assertEquals(2, shopping.cart(customer).first().single().quantity)
+        assertTrue(orders.orders(customer, null).first().isEmpty())
+    }
+
+    @Test fun rejectedEditPreservesLastOrderItem() = runBlocking {
+        val customer = customers.ensureLocalCustomer("demo@panaderia.com")
+        val category = catalog.saveCategory(Category(name = "Panes"))
+        val product = catalog.saveProduct(Product(categoryId = category, name = "Pan", description = "", priceCents = 100))
+        shopping.setQuantity(customer, product, 2)
+        val orderId = orders.createFromCart(customer)
+        val before = orders.order(customer, orderId).first()!!
+        try { orders.updateItemQuantity(customer, orderId, before.items.single().id, 0); fail("Must keep last item") }
+        catch (_: IllegalArgumentException) { }
+        assertEquals(before, orders.order(customer, orderId).first())
+    }
+
     @Test fun orderCrudPreservesHistoricalPriceAndClearsCart() = runBlocking {
         val customer = customers.ensureLocalCustomer("demo@panaderia.com")
         val category = catalog.saveCategory(Category(name = "Panes"))

@@ -1,13 +1,15 @@
 package com.example.proyectopanaderia.presentation.catalog
 import androidx.lifecycle.SavedStateHandle
 import com.example.proyectopanaderia.domain.repository.*
+import com.example.proyectopanaderia.domain.usecase.FilterCatalogUseCase
 import com.example.proyectopanaderia.presentation.common.*
 import kotlinx.coroutines.flow.combine
 
 @dagger.hilt.android.lifecycle.HiltViewModel(assistedFactory = CatalogViewModel.Factory::class)
 class CatalogViewModel @dagger.assisted.AssistedInject constructor(@dagger.assisted.Assisted private val email: String, private val customers: CustomerRepository,
     private val catalog: CatalogRepository, private val shopping: ShoppingRepository,
-    private val savedState: SavedStateHandle) : ScreenViewModel<CatalogState>() {
+    private val savedState: SavedStateHandle,
+    private val filterCatalog: FilterCatalogUseCase = FilterCatalogUseCase()) : ScreenViewModel<CatalogState>() {
     @dagger.assisted.AssistedFactory
     interface Factory { fun create(email: String): CatalogViewModel }
     private var customerId = 0L
@@ -17,11 +19,9 @@ class CatalogViewModel @dagger.assisted.AssistedInject constructor(@dagger.assis
         combine(catalog.products(), catalog.categories(), shopping.favorites(customerId),
             savedState.getStateFlow("query", ""), savedState.getStateFlow<Long?>("categoryId", null)
         ) { products, categories, favorites, query, selected ->
-            val categoryId = selected?.takeIf { id -> categories.any { it.id == id } }
-            CatalogState(products.filter {
-                (categoryId == null || it.categoryId == categoryId) &&
-                    (it.name.contains(query.trim(), true) || it.description.contains(query.trim(), true))
-            }, categories, favorites.map { it.id }.toSet(), query, categoryId, products.isEmpty())
+            val filtered = filterCatalog(products, categories, query, selected)
+            CatalogState(filtered.products, categories, favorites.map { it.id }.toSet(), query,
+                filtered.categoryId, products.isEmpty())
         }
     }
     fun setQuery(value: String) { savedState["query"] = value }

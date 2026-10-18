@@ -13,7 +13,7 @@ Las acciones recorren ese flujo; los datos observados regresan como Flow/StateFl
 - `presentation/<funcionalidad>/*Route.kt`: obtiene el ViewModel, recoge su estado con `collectAsStateWithLifecycle()` y conecta sus acciones al Content.
 - `presentation/<funcionalidad>/*Screen.kt`: contiene las funciones `*Content`, que reciben estado y callbacks, sin acceder a repositorios ni obtener ViewModels.
 - `presentation/common/`: estados excluyentes, mecánica compartida de carga/operaciones y consumo de eventos.
-- `domain/`: modelos, contratos, validación monetaria y cuenta demo.
+- `domain/`: modelos, contratos, validación monetaria, cuenta demo y [casos de uso](CASOS_DE_USO.md) con `operator fun invoke` para validar pedidos y filtrar el catálogo.
 - `data/`: entidades, DAO, relaciones, repositorios Room y preferencias.
 
 ### Provisión de dependencias con Hilt

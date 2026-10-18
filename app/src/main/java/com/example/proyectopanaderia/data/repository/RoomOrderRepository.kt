@@ -4,10 +4,16 @@ import com.example.proyectopanaderia.data.local.database.BakeryDatabase
 import com.example.proyectopanaderia.data.local.database.entity.*
 import com.example.proyectopanaderia.domain.model.OrderStatus
 import com.example.proyectopanaderia.domain.repository.OrderRepository
+import com.example.proyectopanaderia.domain.usecase.ValidateCheckoutUseCase
+import com.example.proyectopanaderia.domain.usecase.ValidateOrderItemChangeUseCase
 import kotlinx.coroutines.flow.map
 import java.util.UUID
 
-class RoomOrderRepository @javax.inject.Inject constructor(private val db: BakeryDatabase) : OrderRepository {
+class RoomOrderRepository @javax.inject.Inject constructor(
+    private val db: BakeryDatabase,
+    private val validateCheckout: ValidateCheckoutUseCase = ValidateCheckoutUseCase(),
+    private val validateOrderItemChange: ValidateOrderItemChangeUseCase = ValidateOrderItemChangeUseCase(),
+) : OrderRepository {
     private val dao = db.orderDao()
     override fun orders(customerId: Long, status: OrderStatus?) =
         dao.orders(customerId, status).map { list -> list.map { it.toModel() } }
@@ -16,11 +22,7 @@ class RoomOrderRepository @javax.inject.Inject constructor(private val db: Baker
 
     override suspend fun createFromCart(customerId: Long): Long = db.withTransaction {
         val cart = db.shoppingDao().cartOnce(customerId)
-        require(cart.isNotEmpty()) { "Agrega al menos un producto al carrito." }
-        require(cart.all { it.product.available && it.item.quantity in 1..999 }) { "Revisa los productos del carrito." }
-        cart.fold(0L) { total, line ->
-            Math.addExact(total, Math.multiplyExact(line.product.priceCents, line.item.quantity.toLong()))
-        }
+        validateCheckout(cart.map { it.toModel() })
         val id = dao.insert(OrderEntity(customerId = customerId, createdAt = System.currentTimeMillis(), ticketToken = UUID.randomUUID().toString()))
         dao.insertItems(cart.map {
             OrderItemEntity(orderId = id, productId = it.product.id, productName = it.product.name,
@@ -31,18 +33,12 @@ class RoomOrderRepository @javax.inject.Inject constructor(private val db: Baker
     }
 
     override suspend fun updateItemQuantity(customerId: Long, orderId: Long, itemId: Long, quantity: Int) {
-        require(quantity in 0..999) { "La cantidad debe estar entre 0 y 999." }
         db.withTransaction {
-            val order = requireNotNull(dao.orderOnce(customerId, orderId)) { "El pedido ya no existe." }
-            require(order.order.status == OrderStatus.SAVED) { "Recupera el pedido archivado antes de editarlo." }
-            require(order.items.any { it.id == itemId }) { "El producto no pertenece al pedido." }
+            val order = dao.orderOnce(customerId, orderId)
+            validateOrderItemChange(order?.toModel(), itemId, quantity)
             if (quantity == 0) {
-                require(order.items.size > 1) { "El pedido necesita un producto; puedes eliminar el pedido completo." }
                 dao.deleteItem(orderId, itemId)
             } else {
-                order.items.fold(0L) { total, line ->
-                    Math.addExact(total, Math.multiplyExact(line.unitPriceCents, (if (line.id == itemId) quantity else line.quantity).toLong()))
-                }
                 dao.updateQuantity(orderId, itemId, quantity)
             }
         }
