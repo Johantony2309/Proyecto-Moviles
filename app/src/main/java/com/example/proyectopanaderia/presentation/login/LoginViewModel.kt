@@ -70,16 +70,6 @@ class LoginViewModel @javax.inject.Inject constructor(private val preferences: P
         mutableState.update { it.copy(signedInEmail = "", authError = null) }
     }
 
-    fun rememberEmail(enabled: Boolean) = perform {
-        preferences.setRememberEmail(enabled, state.value.signedInEmail)
-        eventChannel.send(UiEvent.Message("Preferencia guardada en este dispositivo."))
-    }
-
-    fun keepSession(enabled: Boolean) = perform {
-        preferences.setKeepSession(enabled, state.value.signedInEmail)
-        eventChannel.send(UiEvent.Message("Preferencia guardada en este dispositivo."))
-    }
-
     fun clearAuthError() { mutableState.update { it.copy(authError = null) } }
 
     private fun perform(action: suspend () -> Unit) {

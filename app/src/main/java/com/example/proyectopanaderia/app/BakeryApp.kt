@@ -79,7 +79,7 @@ fun BakeryApp() {
             if (state.signedInEmail.isBlank()) LoginRoute(owner, openSettings)
         }
         composable(AppDestinations.SETTINGS) {
-            SettingsRoute(owner) { navController.popBackStack() }
+            SettingsRoute(state.signedInEmail, onEvent) { navController.popBackStack() }
         }
 
         navigation(startDestination = AppDestinations.CATALOG, route = AppDestinations.SHOP) {

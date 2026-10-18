@@ -36,8 +36,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.proyectopanaderia.domain.auth.DemoAccount
-import com.example.proyectopanaderia.domain.model.LocalSettings
-import com.example.proyectopanaderia.presentation.login.LoginViewModel
 import com.example.proyectopanaderia.R
 import com.example.proyectopanaderia.ui.theme.ProyectoPanaderiaTheme
 
@@ -45,22 +43,21 @@ import com.example.proyectopanaderia.presentation.components.*
 
 @Composable
 internal fun SettingsContent(
-    settings: LocalSettings,
-    busy: Boolean,
+    state: SettingsState,
     rememberEmail: (Boolean) -> Unit,
     keepSession: (Boolean) -> Unit,
     back: () -> Unit,
 ) {
-    TextButton(onClick = back, enabled = !busy) { Text("‹ Volver") }
+    TextButton(onClick = back, enabled = !state.busy) { Text("‹ Volver") }
     Heading("A tu manera")
     Text("Configuración", style = MaterialTheme.typography.titleMedium)
     Text("Elige qué recordar en este dispositivo. Los cambios se guardan automáticamente.",
         color = MaterialTheme.colorScheme.onSurfaceVariant)
     PreferenceRow("Recordar mi correo", "Completa tu correo la próxima vez que inicies sesión.",
-        settings.rememberEmail, !busy, rememberEmail)
+        state.rememberEmail, !state.busy, rememberEmail)
     PreferenceRow("Mantener mi sesión", "Entra sin escribir tus datos al volver a abrir la app. Actívalo solo en tu dispositivo personal.",
-        settings.keepSession, !busy, keepSession)
-    if (busy) LinearProgressIndicator(Modifier.fillMaxWidth())
+        state.keepSession, !state.busy, keepSession)
+    if (state.busy) LinearProgressIndicator(Modifier.fillMaxWidth())
     InfoCard {
         Text("Tus preferencias se quedan aquí", fontWeight = FontWeight.Bold)
         Text("Se guardan únicamente en este dispositivo. La contraseña no se almacena. Al desactivar una opción, se elimina el dato que esa opción recuerda.",
@@ -85,5 +82,5 @@ private fun PreferenceRow(title: String, description: String, checked: Boolean, 
 @Preview(showBackground = true, widthDp = 390, heightDp = 844)
 @Composable
 private fun SettingsPreview() {
-    ProyectoPanaderiaTheme { ScreenSurface { SettingsContent(LocalSettings(), false, {}, {}, {}) } }
+    ProyectoPanaderiaTheme { ScreenSurface { SettingsContent(SettingsState(loading = false), {}, {}, {}) } }
 }
