@@ -102,7 +102,9 @@ fun BakeryApp() {
             }
         }
     }
-    SnackbarHost(snackbar, Modifier.align(Alignment.BottomCenter).navigationBarsPadding().padding(bottom = 80.dp))
+    val bottomNavigationSpace = if (!currentWindowSizeClass().hasWideLayout &&
+        entry?.destination?.hierarchy?.any { it.route == AppDestinations.SHOP } == true) 80.dp else 0.dp
+    SnackbarHost(snackbar, Modifier.align(Alignment.BottomCenter).navigationBarsPadding().padding(bottom = bottomNavigationSpace))
     }
 }
 
