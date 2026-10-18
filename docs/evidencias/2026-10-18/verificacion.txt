@@ -1,0 +1,16 @@
+Resumen de salidas observadas; no es un log íntegro de consola.
+Fecha: 2026-10-18, America/Guayaquil.
+Código: 28abdbda9100c8d56dec70e330f62a295863af43; cambios posteriores documentales.
+Gradle local 9.5.0, --offline --max-workers=2.
+Comando: :app:testDebugUnitTest :app:assembleDebug :app:compileDebugAndroidTestKotlin :app:lintDebug
+BUILD SUCCESSFUL in 1m 6s; 66 actionable tasks: 5 executed, 61 up-to-date.
+assembleDebug, compileDebugAndroidTestKotlin y testDebugUnitTest: UP-TO-DATE.
+Lint ejecutado: 0 errores, 24 advertencias (lint.txt).
+Repetición: :app:testDebugUnitTest --rerun --offline --max-workers=2
+BUILD SUCCESSFUL in 58s; 32 actionable tasks: 1 executed, 31 up-to-date.
+Inicio XML: 2026-10-18T06:15:05.257Z = 2026-10-18 01:15:05.257 UTC-05.
+AdaptiveLayoutTest: 5; DemoAccountTest: 2; ExampleUnitTest: 1;
+MoneyTest: 2; OrderModelTest: 3; UseCasesTest: 9.
+Total: 22 pruebas, 0 fallos, 0 errores, 0 omitidas.
+ExampleUnitTest es una prueba de ejemplo, no cobertura funcional adicional.
+No se repitió instrumentación ni se generaron capturas actuales.

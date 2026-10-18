@@ -6,6 +6,8 @@ La app incluye acceso de demostración, configuración, catálogo, favoritos, ca
 
 `UI (Content → callbacks de Route) → ViewModel → contrato de repositorio → implementación → DAO/Room o DataStore`.
 
+Revisión documental: **18 de octubre de 2026**, código base `28abdbda9100c8d56dec70e330f62a295863af43`. Los casos de uso no forman una capa obligatoria en cada llamada: `CatalogViewModel` utiliza `FilterCatalogUseCase`; `RoomOrderRepository` invoca `ValidateCheckoutUseCase` y `ValidateOrderItemChangeUseCase` dentro de las transacciones, antes de escribir. Véase [evidencias y alcance de la rúbrica](EVIDENCIAS.md).
+
 Las acciones recorren ese flujo; los datos observados regresan como Flow/StateFlow y las Route recogen el estado con `collectAsStateWithLifecycle()`. La UI no construye repositorios ni accede al almacenamiento, y los ViewModels dependen de contratos de repositorio, no de Room, DAO ni DataStore.
 
 - `di/DataModule.kt`: módulos Hilt que proporcionan una instancia de Room por proceso, DataStore y repositorios. Los ViewModels se gestionan mediante Hilt e inyección por constructor.
@@ -27,7 +29,8 @@ Las acciones recorren ese flujo; los datos observados regresan como Flow/StateFl
 
 | ViewModel | Estado y acciones | Alcance |
 | --- | --- | --- |
-| LoginViewModel | Carga de preferencias, sesión, errores de credenciales y cambios de preferencias | Activity; compartido por LoginRoute, SettingsRoute y coordinador de sesión |
+| LoginViewModel | Carga de preferencias, sesión y errores de credenciales | Activity; LoginRoute, splash y coordinador de sesión |
+| SettingsViewModel | Lectura y escritura de preferencias, carga, reintento y avisos | Destino Configuración |
 | CatalogViewModel | Productos filtrados, categorías, favoritos, búsqueda, adición al carrito y ejemplos | Destino Catálogo |
 | FavoritesViewModel | Productos favoritos, quitar favorito y añadir al carrito | Destino Favoritos |
 | CartViewModel | Líneas del carrito, cantidades y confirmación | Destino Carrito |
@@ -37,7 +40,7 @@ Las acciones recorren ese flujo; los datos observados regresan como Flow/StateFl
 
 `ShopRoute`, definido junto al grafo, obtiene el ViewModel de contadores. `ShopContent` dibuja el marco y la barra inferior; cada destino obtiene su propio ViewModel. Las listas se sincronizan mediante los flujos de Room, sin pasar un ViewModel de negocio compartido entre pantallas.
 
-Configuración y acceso comparten deliberadamente LoginViewModel porque las preferencias afectan a la sesión actual. `BakeryApp` lo obtiene con `hiltViewModel()` bajo el propietario Activity y pasa ese propietario a LoginRoute y SettingsRoute, que usan `hiltViewModel(viewModelStoreOwner = owner)`. `MainActivity` obtiene la misma instancia con `by viewModels()` para controlar el splash. ShopRoute utiliza la entrada del grafo SHOP como propietario de ShopViewModel; las demás Route utilizan la entrada de su destino.
+Configuración tiene su propio `SettingsViewModel`, obtenido por `SettingsRoute` con `hiltViewModel()`. Recibe el correo de sesión actual como parámetro de las acciones; no almacena una segunda sesión. Ambos ViewModels observan el contrato compartido `PreferencesRepository`. `BakeryApp` obtiene LoginViewModel bajo el propietario Activity y pasa ese propietario a LoginRoute. `MainActivity` obtiene la misma instancia con `by viewModels()` para controlar el splash. ShopRoute utiliza la entrada del grafo SHOP como propietario de ShopViewModel; las demás Route utilizan la entrada de su destino.
 
 ### Parámetros de sesión y pedido
 
@@ -59,6 +62,14 @@ Cada ViewModel expone **un solo StateFlow público de solo lectura**, llamado `s
 Una lista vacía es contenido válido. Un fallo al escribir conserva el contenido y emite un aviso; no convierte una pantalla legible en una pantalla de error de carga. Al fallar la lectura se utiliza Error; no se combinan banderas contradictorias de carga y error.
 
 Login usa `LoginStatus.LOADING/READY/ERROR` dentro de su único LoginState. Las propiedades derivadas `loading/loadError` permiten integrar el splash, sin poder asignar ambas a la vez. El error de credenciales pertenece al formulario y permanece hasta editarlo o reintentar.
+
+Configuración utiliza `SettingsState` con `loading`, `loadError` y `busy`; no hereda `ScreenViewModel`. La carga inicial tiene un límite de cinco segundos, permite reintentar y bloquea escrituras concurrentes. Sus avisos se consumen desde `SettingsRoute`.
+
+## Adaptación de ventanas
+
+`AdaptiveLayout.kt` calcula `WindowSizeClass` con el tamaño actual de `LocalWindowInfo` y la densidad. `ShopScreen` muestra barra inferior en ancho Compact y `NavigationRail` en Medium/Expanded. La altura compacta reduce cabecera/logo a 80/48 dp; en otro caso utiliza 120/88 dp con navegación lateral y 104/64 dp con barra inferior.
+
+`AdaptiveScreenGrid` limita las columnas a 1/2/3 según la clase de ancho, el espacio real y la escala de fuente. Las decisiones se recalculan al cambiar ventana o densidad. `AdaptiveLayoutTest` verifica el cálculo de columnas; no acredita por sí sola el aspecto visual en tabletas o ventanas múltiples.
 
 ## Eventos y restauración
 
@@ -89,7 +100,7 @@ Atrás desde Ticket vuelve a Pedidos; desde Configuración vuelve al destino ant
 | `cart_items` | Apoyo | Clave compuesta `customerId` + `productId`, `quantity` |
 | `favorites` | Apoyo | Clave compuesta `customerId` + `productId`, `createdAt` |
 
-Se superan las dos tablas maestras mínimas. Clientes conserva el propietario de pedidos, carrito y favoritos; su formulario no aparece en Figma y se implementará en una etapa posterior. Al abrir el catálogo, la cuenta demo resuelve o crea una única fila de cliente por correo antes de observar carrito y favoritos.
+El esquema incluye tres tablas maestras. La referencia histórica a un mínimo de dos corresponde a otra etapa y no se atribuye al criterio documental actual sin la rúbrica completa. Clientes conserva el propietario de pedidos, carrito y favoritos; su formulario queda pendiente para otra etapa. Al abrir el catálogo, la cuenta demo resuelve o crea una única fila de cliente por correo antes de observar carrito y favoritos.
 
 Relaciones: categoría 1:N productos; cliente 1:N pedidos; pedido 1:N detalles; cliente N:M productos mediante favoritos y carrito. Cada detalle puede conservar una referencia opcional al producto original.
 

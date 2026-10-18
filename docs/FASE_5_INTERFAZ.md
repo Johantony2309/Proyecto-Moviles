@@ -1,5 +1,7 @@
 # Fase 5 — Pulido de la interfaz
 
+Este documento conserva el registro histórico de `8d74664` y `6dbb9ba`. Estado documental al **18/10/2026**, código `28abdbd`: Configuración tiene ViewModel propio y la navegación utiliza WindowSizeClass, barra inferior o NavigationRail y cuadrículas adaptativas. Los tamaños de cabecera descritos abajo corresponden a aquella fase; consultar la [arquitectura vigente](ARQUITECTURA.md#adaptación-de-ventanas) y las [evidencias actuales](EVIDENCIAS.md). El informe Word mencionado como pendiente histórico no es un requisito confirmado del criterio documental recibido.
+
 ## Cambios
 
 ### Correcciones de Roberto (`8d74664`)

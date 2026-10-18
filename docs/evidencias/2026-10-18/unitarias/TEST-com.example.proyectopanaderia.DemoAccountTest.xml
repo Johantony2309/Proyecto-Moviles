@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.example.proyectopanaderia.DemoAccountTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-10-18T06:15:05.343Z" hostname="ROBERTO-MERO16" time="0.028">
+  <properties/>
+  <testcase name="distinguishesMissingOrMalformedEmail" classname="com.example.proyectopanaderia.DemoAccountTest" time="0.028"/>
+  <testcase name="acceptsOnlyTheDemoCredentials" classname="com.example.proyectopanaderia.DemoAccountTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

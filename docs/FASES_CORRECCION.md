@@ -2,6 +2,12 @@
 
 Este documento registra las fases solicitadas y sus comprobaciones. Complementa [ARQUITECTURA.md](ARQUITECTURA.md); no declara que todos los criterios de la rúbrica ni el CRUD visual completo estén terminados.
 
+## Actualización documental — 18 de octubre de 2026
+
+Código revisado: `28abdbda9100c8d56dec70e330f62a295863af43`. Se actualizan README y arquitectura para SettingsViewModel, casos de uso y navegación/distribución adaptativas. Nueva ejecución: **22 unitarias aprobadas, sin fallos, errores ni omisiones**; lint **0 errores y 24 advertencias**. Compilación de app y Kotlin instrumentado correctas con tareas UP-TO-DATE. No se repitió instrumentación ni revisión visual.
+
+El [índice de evidencias](EVIDENCIAS.md) adjunta informes, identifica las capturas históricas y separa el criterio recibido (Media, sin puntos directos) de requisitos de otras etapas. Las secciones siguientes conservan sus fechas y resultados originales; no representan una nueva validación del código actual.
+
 ## Fase 1 — Problemas de Pedidos
 
 **Problemas:** pulsar el filtro ya seleccionado podía activar una carga sin una nueva emisión; el ticket seleccionado se perdía al recrear la pantalla.

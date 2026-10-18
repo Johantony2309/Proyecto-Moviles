@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.example.proyectopanaderia.UseCasesTest" tests="9" skipped="0" failures="0" errors="0" timestamp="2026-10-18T06:15:05.431Z" hostname="ROBERTO-MERO16" time="0.021">
+  <properties/>
+  <testcase name="checkoutAcceptsQuantityLimits" classname="com.example.proyectopanaderia.UseCasesTest" time="0.001"/>
+  <testcase name="catalogCombinesCategoryAndNormalizedSearch" classname="com.example.proyectopanaderia.UseCasesTest" time="0.008"/>
+  <testcase name="editingUsesHistoricalPricesEvenWhenProductWasDeleted" classname="com.example.proyectopanaderia.UseCasesTest" time="0.0"/>
+  <testcase name="editingRejectsLineAndTotalOverflow" classname="com.example.proyectopanaderia.UseCasesTest" time="0.002"/>
+  <testcase name="editingRequiresExistingSavedOrderAndOwnedItem" classname="com.example.proyectopanaderia.UseCasesTest" time="0.005"/>
+  <testcase name="editingCannotRemoveLastItemButCanRemoveOneOfTwo" classname="com.example.proyectopanaderia.UseCasesTest" time="0.002"/>
+  <testcase name="deletedCategoryResetsFilterAndBlankQueryReturnsAll" classname="com.example.proyectopanaderia.UseCasesTest" time="0.0"/>
+  <testcase name="checkoutRejectsLineAndTotalOverflow" classname="com.example.proyectopanaderia.UseCasesTest" time="0.001"/>
+  <testcase name="checkoutRejectsEmptyUnavailableAndInvalidQuantities" classname="com.example.proyectopanaderia.UseCasesTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

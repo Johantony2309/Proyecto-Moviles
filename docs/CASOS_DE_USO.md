@@ -16,6 +16,8 @@ Los valores por defecto de los constructores mantienen la compatibilidad con las
 
 ## Pruebas
 
+Código de referencia: `28abdbda9100c8d56dec70e330f62a295863af43`. En la revisión documental del **18/10/2026** se repitieron las 22 pruebas unitarias (9 de `UseCasesTest`), sin fallos, errores ni omisiones. Los [XML y el resumen](EVIDENCIAS.md#verificación-del-código-actual) quedan adjuntos. La ejecución Room descrita abajo es un resultado previo; no se repitió instrumentación en esta revisión.
+
 `UseCasesTest` cubre límites de cantidades, carrito vacío, disponibilidad, desbordamiento de líneas y del total, pedidos archivados o inexistentes, pertenencia de líneas, eliminación de la última línea, precios históricos y filtros del catálogo.
 
 Verificación del 18 de octubre de 2026: `assembleDebug` y `compileDebugAndroidTestKotlin` correctos; 22 pruebas unitarias aprobadas (9 nuevas). Las 6 pruebas de `RoomWorkflowTest` pasaron en un Samsung SM-A750G con Android 10, incluidas las dos nuevas comprobaciones de rechazo sin alterar datos. Se utilizó una base Room en memoria.

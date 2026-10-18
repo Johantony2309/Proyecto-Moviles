@@ -4,6 +4,7 @@ Aplicación Android nativa en Kotlin y Jetpack Compose. Interfaces disponibles: 
 
 ## Documentación
 
+- [Evidencias actualizadas, fecha, commit y alcance del criterio documental](docs/EVIDENCIAS.md).
 - [Casos de uso: reglas de dominio y conservación de transacciones Room](docs/CASOS_DE_USO.md).
 - [Arquitectura Hilt, capas, estado y parámetros de navegación](docs/ARQUITECTURA.md).
 - [Interfaz, accesibilidad, imágenes, logo y barra inferior](docs/FASE_5_INTERFAZ.md).
@@ -62,7 +63,9 @@ Abrir esta carpeta en Android Studio, sincronizar Gradle y ejecutar el módulo `
 .\gradlew.bat :app:connectedDebugAndroidTest
 ```
 
-Verificación local de las correcciones de interfaz de `6dbb9ba` (17 de octubre de 2026): `:app:assembleDebug` correcto, `:app:testDebugUnitTest` con **8 pruebas aprobadas y 0 fallos**, y `:app:lintDebug` con **0 errores y 24 advertencias**. Las tareas se ejecutaron por separado. Estos resultados no equivalen a pruebas visuales, TalkBack o instrumentación en dispositivo de esta versión; consultar el [estado de la fase 5](docs/FASE_5_INTERFAZ.md#validación).
+Verificación del **18 de octubre de 2026**, código `28abdbda9100c8d56dec70e330f62a295863af43`: **22 pruebas unitarias aprobadas, 0 fallos, 0 errores y 0 omitidas**, repetidas con `:app:testDebugUnitTest --rerun`; lint con **0 errores y 24 advertencias**. `:app:assembleDebug` y `:app:compileDebugAndroidTestKotlin` finalizaron correctamente reutilizando resultados vigentes (UP-TO-DATE). Los [informes adjuntos y comandos](docs/EVIDENCIAS.md#verificación-del-código-actual) distinguen pruebas ejecutadas, compilación y evidencia histórica. No se repitió instrumentación ni validación visual en esta actualización.
+
+El criterio recibido es **«Actualizar documentación y evidencias», prioridad Media, sin puntos directos**. La rúbrica completa no está disponible: no se atribuyen a este criterio requisitos de otras etapas, como CRUD visual completo, un mínimo de tablas o un informe Word. Las cinco capturas disponibles son históricas del 16/10; su fecha, commit de incorporación y límites se detallan en el [inventario](docs/EVIDENCIAS.md#capturas-históricas-disponibles). Faltan capturas de la interfaz actual.
 
 Las pruebas unitarias de `MoneyTest` verifican importes exactos y entradas inválidas; `OrderModelTest` verifica las reglas del modelo de pedidos. `RoomWorkflowTest` contiene pruebas instrumentadas de transacciones y datos de ejemplo, que utilizan una base aislada en un dispositivo.
 
@@ -79,6 +82,8 @@ Pedidos abre `ticket/{orderId}` con un argumento `Long`. `TicketViewModel` consu
 ## Organización de pantallas y estado
 
 Catálogo, Favoritos y Carrito tienen ViewModels independientes. Pedidos separa su ViewModel y su estado del archivo visual. Las funciones Route obtienen los ViewModels y recogen el estado con `collectAsStateWithLifecycle()`; Content recibe datos y callbacks.
+
+Configuración utiliza su propio `SettingsViewModel`, con alcance del destino; `LoginViewModel` conserva la sesión con alcance Activity. `FilterCatalogUseCase` filtra el catálogo y los casos de validación de pedidos se ejecutan dentro de las transacciones de `RoomOrderRepository`. La navegación usa barra inferior en ancho compacto y barra lateral en ventanas medianas/amplias; las cuadrículas ajustan columnas al ancho y escala de fuente. La [arquitectura](docs/ARQUITECTURA.md) explica sus responsabilidades y límites.
 
 Cada ViewModel expone un único StateFlow de solo lectura. Las pantallas de negocio usan `ScreenState.Loading/Content/Error` y los avisos puntuales usan un canal expuesto como Flow. Confirmar un pedido emite `OrderCreated`, que el coordinador de navegación convierte en la apertura de Pedidos. Los datos confirmados permanecen en Room.
 

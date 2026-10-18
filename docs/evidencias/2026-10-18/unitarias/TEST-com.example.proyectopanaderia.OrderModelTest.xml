@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.example.proyectopanaderia.OrderModelTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-10-18T06:15:05.397Z" hostname="ROBERTO-MERO16" time="0.019">
+  <properties/>
+  <testcase name="historicalLineSurvivesMissingCatalogProduct" classname="com.example.proyectopanaderia.OrderModelTest" time="0.002"/>
+  <testcase name="figmaTicketTotalsUseIntegerCents" classname="com.example.proyectopanaderia.OrderModelTest" time="0.012"/>
+  <testcase name="arithmeticOverflowIsRejectedInsteadOfCreatingANegativePrice" classname="com.example.proyectopanaderia.OrderModelTest" time="0.004"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
