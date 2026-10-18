@@ -53,10 +53,21 @@ internal fun SettingsContent(
     Text("Configuración", style = MaterialTheme.typography.titleMedium)
     Text("Elige qué recordar en este dispositivo. Los cambios se guardan automáticamente.",
         color = MaterialTheme.colorScheme.onSurfaceVariant)
-    PreferenceRow("Recordar mi correo", "Completa tu correo la próxima vez que inicies sesión.",
-        state.rememberEmail, !state.busy, rememberEmail)
-    PreferenceRow("Mantener mi sesión", "Entra sin escribir tus datos al volver a abrir la app. Actívalo solo en tu dispositivo personal.",
-        state.keepSession, !state.busy, keepSession)
+    val wide = currentWindowSizeClass().hasWideLayout
+    val fontScale = androidx.compose.ui.platform.LocalDensity.current.fontScale
+    BoxWithConstraints {
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp),
+            maxItemsInEachRow = if (wide && maxWidth >= 480.dp * fontScale) 2 else 1) {
+            Box(Modifier.weight(1f)) {
+                PreferenceRow("Recordar mi correo", "Completa tu correo la próxima vez que inicies sesión.",
+                    state.rememberEmail, !state.busy, rememberEmail)
+            }
+            Box(Modifier.weight(1f)) {
+                PreferenceRow("Mantener mi sesión", "Entra sin escribir tus datos al volver a abrir la app. Actívalo solo en tu dispositivo personal.",
+                    state.keepSession, !state.busy, keepSession)
+            }
+        }
+    }
     if (state.busy) LinearProgressIndicator(Modifier.fillMaxWidth())
     InfoCard {
         Text("Tus preferencias se quedan aquí", fontWeight = FontWeight.Bold)

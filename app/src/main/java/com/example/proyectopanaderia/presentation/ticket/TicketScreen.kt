@@ -4,7 +4,7 @@ import com.example.proyectopanaderia.presentation.common.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -22,6 +22,7 @@ import com.example.proyectopanaderia.domain.model.Order
 import com.example.proyectopanaderia.domain.model.OrderItem
 import com.example.proyectopanaderia.domain.validation.Money
 import com.example.proyectopanaderia.presentation.components.EmptyState
+import com.example.proyectopanaderia.presentation.components.AdaptiveScreenGrid
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.common.BitMatrix
 import com.google.zxing.qrcode.QRCodeWriter
@@ -42,17 +43,11 @@ fun TicketScreen(order: Order?, onBack: () -> Unit, modifier: Modifier = Modifie
         return
     }
 
-    BoxWithConstraints(modifier) {
-    val qrSize = minOf(220.dp, maxHeight - 80.dp, maxWidth - 80.dp).coerceAtLeast(1.dp)
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(20.dp),
-        verticalArrangement = Arrangement.spacedBy(14.dp),
-    ) {
-        item {
+    AdaptiveScreenGrid(modifier, maxColumns = 2) {
+        item(span = { GridItemSpan(maxLineSpan) }) {
             TextButton(onClick = onBack) { Text("Volver") }
         }
-        item {
+        item(span = { GridItemSpan(maxLineSpan) }) {
             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
                 Text(stringResource(R.string.app_name), fontFamily = FontFamily.Serif, fontWeight = FontWeight.Bold,
                     style = MaterialTheme.typography.headlineSmall)
@@ -60,37 +55,38 @@ fun TicketScreen(order: Order?, onBack: () -> Unit, modifier: Modifier = Modifie
                 Text(formatDate(validOrder.createdAt), style = MaterialTheme.typography.bodySmall)
             }
         }
-        item {
+        item(span = { GridItemSpan(maxLineSpan) }) {
             Text(stringResource(R.string.local_order_notice), style = MaterialTheme.typography.bodyMedium)
         }
         item {
-            Surface(
-                color = Color.White,
-                shape = MaterialTheme.shapes.medium,
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Box(Modifier.padding(20.dp), contentAlignment = Alignment.Center) {
-                    TicketQrCode(qrMatrix, Modifier.size(qrSize))
+            Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                Surface(
+                    color = Color.White,
+                    shape = MaterialTheme.shapes.medium,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    BoxWithConstraints(Modifier.fillMaxWidth().padding(20.dp), contentAlignment = Alignment.Center) {
+                        // A short window scrolls instead of shrinking the QR to an unreadable height.
+                        val qrSize = minOf(220.dp, maxWidth).coerceAtLeast(1.dp)
+                        TicketQrCode(qrMatrix, Modifier.size(qrSize))
+                    }
                 }
+                Text("Este código identifica el pedido guardado en esta aplicación.", style = MaterialTheme.typography.bodyMedium)
             }
         }
         item {
-            Text("Este código identifica el pedido guardado en esta aplicación.", style = MaterialTheme.typography.bodyMedium)
-        }
-        item {
-            Text("Detalle", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
-        }
-        items(validOrder.items, key = { it.id }) { item -> TicketLine(item) }
-        item {
-            Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)) {
-                Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Text("Total: ${Money.format(validOrder.totalCents)}", fontWeight = FontWeight.Bold,
-                        style = MaterialTheme.typography.titleMedium)
-                    Text("Este ticket no es un comprobante de pago.", style = MaterialTheme.typography.bodySmall)
+            Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                Text("Detalle", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
+                validOrder.items.forEach { item -> TicketLine(item) }
+                Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)) {
+                    Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Text("Total: ${Money.format(validOrder.totalCents)}", fontWeight = FontWeight.Bold,
+                            style = MaterialTheme.typography.titleMedium)
+                        Text("Este ticket no es un comprobante de pago.", style = MaterialTheme.typography.bodySmall)
+                    }
                 }
             }
         }
-    }
     }
 }
 

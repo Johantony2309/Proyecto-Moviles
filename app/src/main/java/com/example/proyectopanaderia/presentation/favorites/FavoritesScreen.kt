@@ -1,8 +1,8 @@
 package com.example.proyectopanaderia.presentation.favorites
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import com.example.proyectopanaderia.presentation.common.*
@@ -17,6 +17,7 @@ import com.example.proyectopanaderia.domain.validation.Money
 import com.example.proyectopanaderia.presentation.components.EmptyState
 import com.example.proyectopanaderia.presentation.components.Heading
 import com.example.proyectopanaderia.presentation.components.ProductPicture
+import com.example.proyectopanaderia.presentation.components.AdaptiveScreenGrid
 
 @Composable
 fun FavoritesContent(state: ScreenState<List<Product>>, retry: () -> Unit,
@@ -24,19 +25,15 @@ fun FavoritesContent(state: ScreenState<List<Product>>, retry: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     ScreenContent(state, retry, modifier) { favorites, busy ->
-        LazyColumn(
-            modifier = modifier,
-            contentPadding = PaddingValues(20.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp),
-        ) {
-            item {
+        AdaptiveScreenGrid(modifier) {
+            item(span = { GridItemSpan(maxLineSpan) }) {
                 Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     Heading("Tus favoritos", textAlign = TextAlign.Center)
                     Text("Tus antojos guardados de Pastelería Andony.", textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
                 }
             }
             if (favorites.isEmpty()) {
-                item {
+                item(span = { GridItemSpan(maxLineSpan) }) {
                     EmptyState(
                         "Aún no guardaste favoritos",
                         "Explora el catálogo y guarda los productos que quieras disfrutar después.",

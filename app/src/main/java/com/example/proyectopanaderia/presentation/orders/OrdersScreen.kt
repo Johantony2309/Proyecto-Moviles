@@ -1,7 +1,7 @@
 package com.example.proyectopanaderia.presentation.orders
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -24,18 +24,14 @@ fun OrdersContent(uiState: ScreenState<OrdersState>, retry: () -> Unit,
     setArchived: (Long, Boolean) -> Unit, onViewTicket: (Long) -> Unit,
     modifier: Modifier = Modifier) {
     ScreenContent(uiState, retry, modifier) { state, busy ->
-        LazyColumn(
-            modifier = modifier,
-            contentPadding = PaddingValues(20.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp),
-        ) {
-            item {
+        AdaptiveScreenGrid(modifier) {
+            item(span = { GridItemSpan(maxLineSpan) }) {
                 Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     Heading("Tus pedidos", textAlign = TextAlign.Center)
                     Text("Consulta el historial de tus pedidos en Pastelería Andony.", textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
                 }
             }
-            item {
+            item(span = { GridItemSpan(maxLineSpan) }) {
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     FilterChip(selected = state.filter == null, onClick = { setFilter(null) },
@@ -46,9 +42,9 @@ fun OrdersContent(uiState: ScreenState<OrdersState>, retry: () -> Unit,
                         enabled = !busy, label = { Text("Archivados") })
                 }
             }
-            if (busy) item { LinearProgressIndicator(Modifier.fillMaxWidth()) }
+            if (busy) item(span = { GridItemSpan(maxLineSpan) }) { LinearProgressIndicator(Modifier.fillMaxWidth()) }
             when {
-                state.orders.isEmpty() -> item {
+                state.orders.isEmpty() -> item(span = { GridItemSpan(maxLineSpan) }) {
                     EmptyState(
                         if (state.filter == null) "Aún no tienes pedidos" else "No hay pedidos en este filtro",
                         if (state.filter == null) "Cuando confirmes un pedido aparecerá aquí con su detalle."

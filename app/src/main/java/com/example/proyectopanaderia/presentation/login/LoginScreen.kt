@@ -67,7 +67,6 @@ internal fun ColumnScope.LoginContent(
             if (!state.busy) signIn(email, password)
         }
     }
-    BrandHeader()
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Heading("¡Qué gusto verte!")
         Text("Entra y siéntete como en casa.", color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -120,5 +119,5 @@ internal fun ColumnScope.LoginContent(
 @Preview(showBackground = true, widthDp = 390, heightDp = 844)
 @Composable
 private fun LoginPreview() {
-    ProyectoPanaderiaTheme { ScreenSurface { LoginContent(LoginState(status = LoginStatus.READY), LoginForm(), {}, { _, _ -> }, {}, {}) } }
+    ProyectoPanaderiaTheme { ScreenSurface(sidePanel = { BrandHeader() }) { LoginContent(LoginState(status = LoginStatus.READY), LoginForm(), {}, { _, _ -> }, {}, {}) } }
 }

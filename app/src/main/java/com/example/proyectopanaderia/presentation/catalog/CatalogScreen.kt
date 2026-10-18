@@ -30,8 +30,7 @@ fun CatalogContent(
         val favoriteIds = data.favoriteIds
         val query = data.query
         val categoryId = data.categoryId
-        LazyVerticalGrid(columns = GridCells.Adaptive(150.dp), modifier = modifier,
-            contentPadding = PaddingValues(20.dp), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+        AdaptiveScreenGrid(modifier) {
             item(span = { GridItemSpan(maxLineSpan) }) {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Heading("Tu próximo antojo", textAlign = TextAlign.Center)

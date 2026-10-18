@@ -6,6 +6,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.proyectopanaderia.presentation.login.LoginViewModel
 import com.example.proyectopanaderia.presentation.components.ScreenSurface
+import com.example.proyectopanaderia.presentation.components.BrandHeader
 
 @Composable
 fun LoginRoute(owner: ViewModelStoreOwner, openSettings: () -> Unit) {
@@ -17,7 +18,7 @@ fun LoginRoute(owner: ViewModelStoreOwner, openSettings: () -> Unit) {
     var password by remember { mutableStateOf("") }
     var visible by remember { mutableStateOf(false) }
     val form = LoginForm(email, password, visible, submitted)
-    ScreenSurface {
+    ScreenSurface(sidePanel = { BrandHeader() }) {
         LoginContent(state, form, {
             email = it.email
             password = it.password

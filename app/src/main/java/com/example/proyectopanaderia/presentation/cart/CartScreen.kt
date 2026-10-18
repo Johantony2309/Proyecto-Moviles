@@ -1,8 +1,8 @@
 package com.example.proyectopanaderia.presentation.cart
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import com.example.proyectopanaderia.presentation.common.*
@@ -18,6 +18,7 @@ import com.example.proyectopanaderia.domain.validation.Money
 import com.example.proyectopanaderia.presentation.components.EmptyState
 import com.example.proyectopanaderia.presentation.components.Heading
 import com.example.proyectopanaderia.presentation.components.ProductPicture
+import com.example.proyectopanaderia.presentation.components.AdaptiveScreenGrid
 
 @Composable
 fun CartContent(state: ScreenState<List<CartItem>>, retry: () -> Unit,
@@ -26,19 +27,15 @@ fun CartContent(state: ScreenState<List<CartItem>>, retry: () -> Unit,
 ) {
     ScreenContent(state, retry, modifier) { cart, busy ->
         val subtotalCents = cart.fold(0L) { total, item -> Math.addExact(total, item.totalCents) }
-        LazyColumn(
-            modifier = modifier,
-            contentPadding = PaddingValues(20.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp),
-        ) {
-            item {
+        AdaptiveScreenGrid(modifier) {
+            item(span = { GridItemSpan(maxLineSpan) }) {
                 Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     Heading("Tu carrito", textAlign = TextAlign.Center)
                     Text("Revisa tus antojos antes de continuar.", textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
                 }
             }
             if (cart.isEmpty()) {
-                item {
+                item(span = { GridItemSpan(maxLineSpan) }) {
                     EmptyState(
                         "Tu carrito está vacío",
                         "Añade productos del catálogo o de tus favoritos para preparar tu pedido.",
@@ -87,7 +84,7 @@ fun CartContent(state: ScreenState<List<CartItem>>, retry: () -> Unit,
                         }
                     }
                 }
-                item {
+                item(span = { GridItemSpan(maxLineSpan) }) {
                     Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)) {
                         Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                             Text("Resumen", fontWeight = FontWeight.Bold)

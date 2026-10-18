@@ -43,15 +43,30 @@ import com.example.proyectopanaderia.R
 import com.example.proyectopanaderia.ui.theme.ProyectoPanaderiaTheme
 
 @Composable
-internal fun ScreenSurface(content: @Composable ColumnScope.() -> Unit) {
+internal fun ScreenSurface(
+    sidePanel: (@Composable ColumnScope.() -> Unit)? = null,
+    content: @Composable ColumnScope.() -> Unit,
+) {
+    val wide = currentWindowSizeClass().hasWideLayout
     Scaffold(contentWindowInsets = WindowInsets.safeDrawing) { padding ->
         Box(Modifier.fillMaxSize().padding(padding).consumeWindowInsets(padding), contentAlignment = Alignment.TopCenter) {
-            Column(
-                modifier = Modifier.widthIn(max = 480.dp).fillMaxWidth().fillMaxHeight()
-                    .verticalScroll(rememberScrollState()).padding(horizontal = 24.dp, vertical = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-                content = content,
-            )
+            if (wide && sidePanel != null) {
+                Row(Modifier.widthIn(max = 1000.dp).fillMaxSize().padding(24.dp),
+                    horizontalArrangement = Arrangement.spacedBy(24.dp)) {
+                    Column(Modifier.weight(0.8f).fillMaxHeight().verticalScroll(rememberScrollState()), content = sidePanel)
+                    Column(Modifier.weight(1.2f).fillMaxHeight().imePadding().verticalScroll(rememberScrollState()),
+                        verticalArrangement = Arrangement.spacedBy(16.dp), content = content)
+                }
+            } else {
+                Column(
+                    modifier = Modifier.widthIn(max = if (wide) 840.dp else 480.dp).fillMaxWidth().fillMaxHeight()
+                        .imePadding().verticalScroll(rememberScrollState()).padding(horizontal = 24.dp, vertical = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                ) {
+                    sidePanel?.invoke(this)
+                    content()
+                }
+            }
         }
     }
 }
