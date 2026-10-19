@@ -6,24 +6,12 @@ import com.example.proyectopanaderia.domain.repository.CatalogRepository
 import kotlinx.coroutines.flow.map
 import androidx.room.withTransaction
 import com.example.proyectopanaderia.data.local.database.BakeryDatabase
-import com.example.proyectopanaderia.data.local.database.CatalogSeed
+import com.example.proyectopanaderia.data.local.database.CatalogSeedStore
 
 class RoomCatalogRepository @javax.inject.Inject constructor(private val db: BakeryDatabase) : CatalogRepository {
     private val dao = db.catalogDao()
     override suspend fun loadExampleCatalog() = db.withTransaction {
-        CatalogSeed.categories.forEach { (categoryName, products) ->
-            val position = CatalogSeed.categories.keys.indexOf(categoryName)
-            val categoryId = dao.categoryByName(categoryName)?.id
-                ?: dao.insertCategory(CategoryEntity(name = categoryName, position = position))
-            products.forEach { product ->
-                if (dao.productByName(categoryId, product.name) == null) {
-                    dao.insertProduct(ProductEntity(categoryId = categoryId, name = product.name,
-                        description = product.description, priceCents = product.priceCents,
-                        imageKey = product.imageKey))
-                }
-            }
-        }
-        Unit
+        CatalogSeedStore.insertMissing(db.openHelper.writableDatabase)
     }
     override fun categories() = dao.categories().map { list -> list.map { it.toModel() } }
     override fun products(categoryId: Long?, query: String) =

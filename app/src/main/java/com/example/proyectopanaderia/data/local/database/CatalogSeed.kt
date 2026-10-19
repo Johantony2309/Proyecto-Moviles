@@ -9,6 +9,10 @@ internal object CatalogSeed {
         val imageKey: String,
     )
 
+    /** A unique name occupies its slot even if the user customized the row. */
+    fun variantDescription(categoryName: String, product: SeedProduct): String? =
+        product.description.takeIf { categories.getValue(categoryName).count { it.name == product.name } > 1 }
+
     /** Category name (in display order) to its products. */
     val categories: Map<String, List<SeedProduct>> = linkedMapOf(
         "Panes" to listOf(

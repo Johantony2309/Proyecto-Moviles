@@ -6,6 +6,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.room.Room
 import com.example.proyectopanaderia.data.local.database.BakeryDatabase
 import com.example.proyectopanaderia.data.local.database.CatalogSeederCallback
+import com.example.proyectopanaderia.data.local.database.MIGRATION_1_2
 import com.example.proyectopanaderia.data.local.database.dao.CustomerDao
 import com.example.proyectopanaderia.data.local.preferences.LocalPreferences
 import com.example.proyectopanaderia.data.local.preferences.localDataStore
@@ -27,7 +28,7 @@ object DataModule {
     fun database(@ApplicationContext context: Context): BakeryDatabase =
         Room.databaseBuilder(context, BakeryDatabase::class.java, "panaderia.db")
             .addCallback(CatalogSeederCallback())
-            .fallbackToDestructiveMigration(dropAllTables = true)
+            .addMigrations(MIGRATION_1_2)
             .build()
 
     @Provides
