@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.proyectopanaderia.domain.model.*
 import com.example.proyectopanaderia.domain.validation.Money
@@ -55,16 +56,19 @@ fun CatalogContent(
             }
             items(products, key = { it.id }) { p ->
                 Card(
-                    modifier = Modifier.fillMaxHeight().testTag("product-${p.id}"),
+                    modifier = Modifier.testTag("product-${p.id}"),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
                 ) {
                     Column(Modifier.padding(12.dp).fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp),
                         horizontalAlignment = Alignment.CenterHorizontally) {
                         ProductPicture(p.imageKey, Modifier.fillMaxWidth().height(90.dp))
-                        Text(p.name, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
-                        Text(p.description, style = MaterialTheme.typography.bodySmall, textAlign = TextAlign.Center)
+                        Text(p.name, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center,
+                            minLines = 2, maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.fillMaxWidth())
+                        Text(p.description, style = MaterialTheme.typography.bodySmall, textAlign = TextAlign.Center,
+                            minLines = 2, maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.fillMaxWidth())
                         Text(Money.format(p.priceCents), color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
-                        if (!p.available) Text("No disponible", style = MaterialTheme.typography.bodySmall)
+                        Text(if (p.available) "" else "No disponible", style = MaterialTheme.typography.bodySmall,
+                            minLines = 1, maxLines = 1)
                         TextButton(onClick = { favorite(p.id, p.id !in favoriteIds) }, enabled = !busy, modifier = Modifier.fillMaxWidth()) {
                             Text(if (p.id in favoriteIds) "♥ Guardado" else "♡ Guardar")
                         }
