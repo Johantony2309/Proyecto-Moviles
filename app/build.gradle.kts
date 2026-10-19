@@ -35,6 +35,10 @@ android {
     buildFeatures {
         compose = true
     }
+    sourceSets {
+        getByName("androidTest").assets.srcDir("$projectDir/schemas")
+        getByName("test").resources.srcDir("$projectDir/schemas")
+    }
 }
 
 dependencies {

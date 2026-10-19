@@ -4,6 +4,7 @@ import androidx.room.Room
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.example.proyectopanaderia.data.local.database.BakeryDatabase
+import com.example.proyectopanaderia.data.local.database.CatalogSeed
 import com.example.proyectopanaderia.data.repository.*
 import com.example.proyectopanaderia.domain.model.*
 import kotlinx.coroutines.flow.first
@@ -105,9 +106,10 @@ class RoomWorkflowTest {
         val first = customers.ensureLocalCustomer("demo@panaderia.com")
         assertEquals(first, customers.ensureLocalCustomer("DEMO@PANADERIA.COM"))
         catalog.loadExampleCatalog()
-        try { catalog.loadExampleCatalog(); fail("Must not duplicate examples") }
-        catch (_: IllegalArgumentException) { }
-        assertEquals(4, catalog.products().first().size)
-        assertEquals(3, catalog.categories().first().size)
+        val before = catalog.products().first()
+        catalog.loadExampleCatalog()
+        assertEquals(before, catalog.products().first())
+        assertEquals(CatalogSeed.categories.values.sumOf { it.size }, before.size)
+        assertEquals(CatalogSeed.categories.size, catalog.categories().first().size)
     }
 }
