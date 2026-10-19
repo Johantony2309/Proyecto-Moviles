@@ -5,7 +5,7 @@ import com.example.proyectopanaderia.data.local.database.entity.*
 
 @Database(entities = [CategoryEntity::class, ProductEntity::class, CustomerEntity::class,
     CartItemEntity::class, FavoriteEntity::class, OrderEntity::class, OrderItemEntity::class],
-    version = 1, exportSchema = true)
+    version = 2, exportSchema = true)
 @TypeConverters(DatabaseConverters::class)
 abstract class BakeryDatabase : RoomDatabase() {
     abstract fun catalogDao(): CatalogDao

@@ -14,6 +14,8 @@ interface CatalogDao {
         ORDER BY name""")
     fun products(categoryId: Long?, query: String): Flow<List<ProductEntity>>
     @Query("SELECT * FROM products WHERE id = :id") suspend fun product(id: Long): ProductEntity?
+    @Query("SELECT * FROM products WHERE categoryId = :categoryId AND name = :name LIMIT 1")
+    suspend fun productByName(categoryId: Long, name: String): ProductEntity?
     @Insert suspend fun insertCategory(value: CategoryEntity): Long
     @Update suspend fun updateCategory(value: CategoryEntity): Int
     @Insert suspend fun insertProduct(value: ProductEntity): Long

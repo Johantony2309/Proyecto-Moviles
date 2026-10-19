@@ -6,19 +6,23 @@ import com.example.proyectopanaderia.domain.repository.CatalogRepository
 import kotlinx.coroutines.flow.map
 import androidx.room.withTransaction
 import com.example.proyectopanaderia.data.local.database.BakeryDatabase
+import com.example.proyectopanaderia.data.local.database.CatalogSeed
 
 class RoomCatalogRepository @javax.inject.Inject constructor(private val db: BakeryDatabase) : CatalogRepository {
     private val dao = db.catalogDao()
     override suspend fun loadExampleCatalog() = db.withTransaction {
-        require(dao.productCount() == 0) { "El catálogo ya contiene productos." }
-        val ids = mutableMapOf<String, Long>()
-        listOf("Panes", "Pasteles", "Dulces").forEachIndexed { position, name ->
-            ids[name] = dao.categoryByName(name)?.id ?: dao.insertCategory(CategoryEntity(name = name, position = position))
+        CatalogSeed.categories.forEach { (categoryName, products) ->
+            val position = CatalogSeed.categories.keys.indexOf(categoryName)
+            val categoryId = dao.categoryByName(categoryName)?.id
+                ?: dao.insertCategory(CategoryEntity(name = categoryName, position = position))
+            products.forEach { product ->
+                if (dao.productByName(categoryId, product.name) == null) {
+                    dao.insertProduct(ProductEntity(categoryId = categoryId, name = product.name,
+                        description = product.description, priceCents = product.priceCents,
+                        imageKey = product.imageKey))
+                }
+            }
         }
-        dao.insertProduct(ProductEntity(categoryId = ids.getValue("Panes"), name = "Croissant", description = "Mantequilla · 1 unidad", priceCents = 150, imageKey = "croissant"))
-        dao.insertProduct(ProductEntity(categoryId = ids.getValue("Pasteles"), name = "Torta de chocolate", description = "Mediana · 8 porciones", priceCents = 800, imageKey = "cake"))
-        dao.insertProduct(ProductEntity(categoryId = ids.getValue("Panes"), name = "Pan de campo", description = "Masa madre · 500 g", priceCents = 325, imageKey = "bread"))
-        dao.insertProduct(ProductEntity(categoryId = ids.getValue("Dulces"), name = "Rollo de canela", description = "Canela y glaseado", priceCents = 225, imageKey = "roll"))
         Unit
     }
     override fun categories() = dao.categories().map { list -> list.map { it.toModel() } }

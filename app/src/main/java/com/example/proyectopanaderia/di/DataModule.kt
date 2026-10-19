@@ -5,6 +5,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.room.Room
 import com.example.proyectopanaderia.data.local.database.BakeryDatabase
+import com.example.proyectopanaderia.data.local.database.CatalogSeederCallback
 import com.example.proyectopanaderia.data.local.database.dao.CustomerDao
 import com.example.proyectopanaderia.data.local.preferences.LocalPreferences
 import com.example.proyectopanaderia.data.local.preferences.localDataStore
@@ -24,7 +25,10 @@ object DataModule {
     @Provides
     @Singleton
     fun database(@ApplicationContext context: Context): BakeryDatabase =
-        Room.databaseBuilder(context, BakeryDatabase::class.java, "panaderia.db").build()
+        Room.databaseBuilder(context, BakeryDatabase::class.java, "panaderia.db")
+            .addCallback(CatalogSeederCallback())
+            .fallbackToDestructiveMigration(dropAllTables = true)
+            .build()
 
     @Provides
     fun customerDao(database: BakeryDatabase): CustomerDao = database.customerDao()
